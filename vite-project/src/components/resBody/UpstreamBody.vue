@@ -78,32 +78,6 @@
                 <key-value-input v-model="formData.nodes" key-placeholder="节点地址 (如: 127.0.0.1:8080)"
                     value-placeholder="权重 (如: 100)" />
             </el-card>
-
-            <!-- 超时设置 -->
-            <el-card class="form-section">
-                <template #header>
-                    <span class="section-title">超时设置 (毫秒)</span>
-                </template>
-
-                <el-row :gutter="20">
-                    <el-col :span="8">
-                        <el-form-item label="连接超时" prop="timeout.connect">
-                            <el-input-number v-model="formData.timeout.connect" :min="0" />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="发送超时" prop="timeout.send">
-                            <el-input-number v-model="formData.timeout.send" :min="0" />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="读取超时" prop="timeout.read">
-                            <el-input-number v-model="formData.timeout.read" :min="0" />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-            </el-card>
-
             <!-- 健康检查配置 -->
             <el-card class="form-section">
                 <template #header>
@@ -160,11 +134,6 @@ const formRef = ref();
 // 初始表单数据
 const initialFormData = {
     retries: 1,
-    timeout: {
-        connect: 0,
-        send: 0,
-        read: 0,
-    },
     nodes: {},
     type: "roundrobin",
     checks: {},

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { ElButton, ElInput } from 'element-plus';
+import { Delete } from '@element-plus/icons-vue';
 
 const props = defineProps({
     modelValue: {
@@ -38,7 +39,6 @@ const updateModel = () => {
             newValue[item.key] = item.value || '';
         }
     });
-    emit('update:modelValue', newValue);
 };
 
 // 初始化
@@ -62,15 +62,17 @@ const removeItem = (index) => {
 <template>
     <div class="key-value-input">
         <div class="key-value-input-header">
-            <span>键值对列表</span>
-            <el-button type="text" @click="addItem" icon="el-icon-plus">添加</el-button>
+            <span style="margin-right: 16px;">键值对列表</span>
+            <el-button type="text" @click="addItem">添加节点</el-button>
+            <el-button type="text" @click="addItem">提交</el-button>
         </div>
 
-        <div class="key-value-input-items">
+        <div class="key-value-input-items" v-show="items.length !== 0">
             <div v-for="(item, index) in items" :key="index" class="key-value-input-item">
                 <el-input v-model="item.key" :placeholder="keyPlaceholder" />
                 <el-input v-model="item.value" :placeholder="valuePlaceholder" />
-                <el-button type="danger" text @click="removeItem(index)" icon="el-icon-delete" />
+                <el-button type="danger" text @click="removeItem(index)" :icon="Delete" />
+
             </div>
         </div>
     </div>
@@ -83,7 +85,7 @@ const removeItem = (index) => {
 
 .key-value-input-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: left;
     align-items: center;
     margin-bottom: 8px;
     font-weight: bold;

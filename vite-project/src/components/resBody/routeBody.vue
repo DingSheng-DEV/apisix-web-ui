@@ -38,7 +38,7 @@
                     <span class="section-title">URI配置</span>
                 </template>
 
-                <array-input v-model="formData.uris" label="URI列表" placeholder="例如: /api/test" />
+                <array-input v-model="formData.uris" label="URI列表（必填）" placeholder="例如: /api/test" />
 
                 <array-input v-model="formData.methods" label="HTTP方法" placeholder="例如: GET" :options="httpMethods" />
 
@@ -50,7 +50,7 @@
             <!-- 上游服务配置 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">上游服务配置</span>
+                    <span class="section-title">上游服务配置(必填)</span>
                 </template>
 
                 <el-row :gutter="20">
@@ -80,31 +80,6 @@
                 </el-form-item>
             </el-card>
 
-            <!-- 超时设置 -->
-            <el-card class="form-section">
-                <template #header>
-                    <span class="section-title">超时设置 (毫秒)</span>
-                </template>
-
-                <el-row :gutter="20">
-                    <el-col :span="8">
-                        <el-form-item label="连接超时" prop="timeout.connect">
-                            <el-input-number v-model="formData.timeout.connect" :min="0" />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="发送超时" prop="timeout.send">
-                            <el-input-number v-model="formData.timeout.send" :min="0" />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="读取超时" prop="timeout.read">
-                            <el-input-number v-model="formData.timeout.read" :min="0" />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-            </el-card>
-
             <!-- 脚本配置 -->
             <el-card class="form-section">
                 <template #header>
@@ -130,7 +105,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive } from "vue";
 import {
     ElButton,
     ElCard,
@@ -143,18 +118,19 @@ import {
     ElRadioGroup,
     ElRadio,
     ElSwitch,
-    ElMessage
-} from 'element-plus';
+    ElMessage,
+} from "element-plus";
 
 // 导入自定义组件
-import ArrayInput from '@/components/ArrayInput.vue';
-import KeyValueInput from '@/components/KeyValueInput.vue';
-
+import ArrayInput from "@/components/ArrayInput.vue";
+import KeyValueInput from "@/components/KeyValueInput.vue";
+import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
+import { getNonEmptyValues } from "@/utils/index.js";
 // 表单引用
 const formRef = ref();
 
 // 初始表单数据
-const initialFormData = {
+let initialFormData = {
     uris: [],
     methods: [],
     hosts: [],
@@ -169,11 +145,6 @@ const initialFormData = {
         type: "",
         nodes: {},
     },
-    timeout: {
-        connect: 0,
-        send: 0,
-        read: 0,
-    },
     enable_websocket: false,
     status: 1,
 };
@@ -182,35 +153,59 @@ const initialFormData = {
 const formData = reactive(JSON.parse(JSON.stringify(initialFormData)));
 
 // HTTP方法选项
-const httpMethods = ref(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']);
+const httpMethods = ref([
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "PATCH",
+    "HEAD",
+    "OPTIONS",
+]);
 
 // 表单验证规则
 const rules = {
     name: [
-        { required: true, message: '请输入路由名称', trigger: 'blur' },
-        { min: 2, max: 50, message: '长度在2到50个字符之间', trigger: 'blur' }
+        { required: true, message: "请输入路由名称", trigger: "blur" },
+        { min: 2, max: 50, message: "长度在2到50个字符之间", trigger: "blur" },
     ],
-    'upstream.type': [
-        { required: true, message: '请选择上游类型', trigger: 'change' }
+    "upstream.type": [
+        { required: true, message: "请选择上游类型", trigger: "change" },
     ],
-    'upstream.nodes': [
+    "upstream.nodes": [
         {
             validator: (rule, value, callback) => {
                 if (Object.keys(value).length === 0) {
-                    callback(new Error('至少需要配置一个节点'));
+                    callback(new Error("至少需要配置一个节点"));
                 } else {
                     callback();
                 }
             },
-            trigger: 'change'
-        }
-    ]
+            trigger: "change",
+        },
+    ],
 };
 
 // 提交表单
 const submitForm = () => {
-
-
+    let k = getNonEmptyValues(formData)
+    console.log(k);
+    k = {
+        "uri": "/index.html",
+        // "hosts": ["foo.com", "*.bar.com"],
+        // "remote_addrs": ["127.0.0.0/8"],
+        // "methods": ["PUT", "GET"],
+        // "enable_websocket": true,
+        "upstream": {
+            "type": "roundrobin",
+            "nodes": {
+                "127.0.0.1:1980": 1
+            }
+        }
+    }
+    createRouters(k).then((res) => {
+        console.log(res);
+    });
 };
 
 // 重置表单

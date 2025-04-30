@@ -7,7 +7,7 @@ export function getRouterById(id) {
 }
 
 export function createRouters(parms, id) {
-  return Http.put(`/apisix/admin/routes/${id}`, parms);
+  return Http.post(`/apisix/admin/routes`, parms);
 }
 export function PatchRouters(parms) {
   return Http.put("/apisix/admin/routes/1", parms);
