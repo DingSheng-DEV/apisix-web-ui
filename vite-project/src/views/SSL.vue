@@ -99,7 +99,7 @@ const onSubmit = () => {
             </el-form-item>
           </el-form> -->
             </el-card>
-            <el-card style="margin-top: 10px;overflow: auto;">
+            <el-card style="margin-top: 10px;max-height: calc(-240px + 100vh);overflow: auto;">
                 <el-empty description="数据暂无" v-if="empty" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
                     <el-table-column prop="uri" label="uri" />
