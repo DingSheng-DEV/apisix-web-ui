@@ -5,7 +5,8 @@ import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
 let apiType = inject('apiType');
 let resouseActive = ref("");
 let globalActive = ref("");
-
+import { useRouter } from "vue-router";
+const route = useRouter();
 const changeType = (index) => {
   // 根据 index 找到对应的菜单项
   const clickedItem = menuItems
@@ -13,23 +14,10 @@ const changeType = (index) => {
   for (let item of clickedItem) {
     if (index.index === item.index) {
       apiType.value = item.label;
+      route.push(`/${item.label}`)
     }
   }
 };
-const resouse = [
-  {
-    value: "Router",
-    label: "Router",
-  },
-  {
-    value: "Service",
-    label: "Service",
-  },
-  {
-    value: "Upstream",
-    label: "Upstream",
-  },
-]
 
 const menuItems = reactive([
   {

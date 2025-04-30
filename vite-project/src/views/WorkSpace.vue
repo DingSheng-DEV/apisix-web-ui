@@ -1,0 +1,55 @@
+<script setup>
+import { ElButton, ElCard, ElOption, ElSelect, ElInput, ElForm, ElFormItem, ElEmpty, ElDialog } from "element-plus";
+import { ref, reactive, provide } from "vue";
+import LeftSideBar from "@/components/leftside/leftSideBar.vue";
+import TopBar from "@/components/TopBar/TopBar.vue";
+// import RouteReflect from "../public/RouteReflect.js";
+import result from "@/components/main/result.vue";
+import { Search } from "@element-plus/icons-vue";
+let apiType = ref('')
+provide('apiType', apiType);
+let type = ref(-1);
+let dialogVisible = ref(false)
+let formBody = reactive({
+
+})
+let formData = ref({
+
+})
+
+
+const onBeforeSubmit = (index) => {
+    dialogVisible.value = true
+    // formBody = []
+    // formData = RouteReflect[index]
+    // if (RouteReflect[index].body) {
+    //   let { body, ...parms } = RouteReflect[index]
+    //   formBody = JSON.parse(JSON.stringify(RouteReflect[index].body));
+    //   formData = JSON.parse(JSON.stringify(parms));
+    // }
+    // dialogVisible.value = true
+    // type.value = index
+
+
+
+}
+
+const onSubmit = () => {
+    dialogVisible.value = false
+}
+</script>
+
+<template>
+    <div>
+        <TopBar style="margin-bottom: 10px;"></TopBar>
+        <div style="display: flex;height:  calc(100vh - 150px)">
+            <LeftSideBar></LeftSideBar>
+            <router-view style="width: 100%;"></router-view>
+        </div>
+    </div>
+
+
+   
+</template>
+
+<style scoped></style>

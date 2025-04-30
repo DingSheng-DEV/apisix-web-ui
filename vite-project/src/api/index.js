@@ -2,6 +2,9 @@ import Http from "../utils/request.js";
 export function getRouters() {
   return Http.get("/apisix/admin/routes");
 }
+export function getRouterById(id) {
+  return Http.get(`/apisix/admin/routes/${id}`);
+}
 
 export function createRouters(parms, id) {
   return Http.put(`/apisix/admin/routes/${id}`, parms);

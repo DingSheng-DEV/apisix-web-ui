@@ -1,9 +1,10 @@
-import { createApp } from 'vue';
-import App from './App.vue';
-
+import { createApp } from "vue";
+import App from "./App.vue";
+import router from "@/route/index.js";
 // 引入 Element Plus 的样式
-import 'element-plus/dist/index.css';
+import "element-plus/dist/index.css";
 
 const app = createApp(App);
+app.use(router);
 
-app.mount('#app');
+app.mount("#app");

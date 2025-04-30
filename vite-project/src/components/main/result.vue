@@ -9,24 +9,24 @@ watch(apiType, (newValue) => {
 
 });
 
-for (let i = 1; i < 30; i++) {
-    let k = {
-        "uri": "/index.html",
-        "hosts": ["foo.com", "*.bar.com"],
-        "remote_addrs": ["127.0.0.0/8"],
-        "methods": ["PUT", "GET"],
-        "enable_websocket": true,
-        "upstream": {
-            "type": "roundrobin",
-            "nodes": {
-                "127.0.0.1:1980": 1
-            }
-        }
-    }
-    createRouters(k, i).then((res) => {
-        console.log(res);
-    });
-}
+// for (let i = 1; i < 30; i++) {
+//     let k = {
+//         "uri": "/index.html",
+//         "hosts": ["foo.com", "*.bar.com"],
+//         "remote_addrs": ["127.0.0.0/8"],
+//         "methods": ["PUT", "GET"],
+//         "enable_websocket": true,
+//         "upstream": {
+//             "type": "roundrobin",
+//             "nodes": {
+//                 "127.0.0.1:1980": 1
+//             }
+//         }
+//     }
+//     createRouters(k, i).then((res) => {
+//         console.log(res);
+//     });
+// }
 
 let reflashList = (index) => {
     tableList.value.splice(index, 1);
@@ -91,9 +91,6 @@ onMounted(() => [
 </script>
 
 <template>
-    <button @click="loadList()">get</button>
-    <button @click="c()">get</button>
-    <button @click="D()">d</button>
     <div>
         <el-empty description="数据暂无" v-if="empty" />
         <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
