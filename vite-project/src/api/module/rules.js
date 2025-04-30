@@ -1,3 +1,5 @@
+import Http from "@/utils/request.js";
+
 /**
  * 获取全局规则列表
  * @returns {Promise<ApiResponse<Array<GlobalRule>>>} 包含全局规则列表的Promise

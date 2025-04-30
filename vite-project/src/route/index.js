@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 const routes = [
   {
     path: "/",
+    redirect: "/Router",
     name: "Workspace",
     component: import("@/views/Workspace.vue"),
     children: [

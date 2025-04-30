@@ -13,31 +13,6 @@ watch(apiType, (newValue) => {
 });
 let dialogVisible = ref(false)
 
-
-// for (let i = 0; i < 60; i++) {
-//     let c = {
-//         "plugins": {
-//             "limit-count": {
-//                 "count": 2,
-//                 "time_window": 60,
-//                 "rejected_code": 503,
-//                 "key": "remote_addr"
-//             }
-//         },
-//         "enable_websocket": true,
-//         "upstream": {
-//             "type": "roundrobin",
-//             "nodes": {
-//                 "127.0.0.1:1980": 1
-//             }
-//         }
-//     }
-
-//     createServices(c, i).then((res) => {
-//         console.log(res);
-//     });
-// }
-
 let searchId = ref('')
 let search = (id) => {
     tableList.value = [];
@@ -67,14 +42,8 @@ let reflashList = (index) => {
 let loadList = () => {
     tableList.value = [];
     getUpstreams().then((res) => {
-        console.log(res.data.list);
-
         for (let item of res.data.list) {
-            let { id, hash_on, nodes } = item.value;
-            let { scheme, type, pass_host } = nodes
-
-            console.log(nodes);
-
+            let { id, hash_on, scheme, type, pass_host } = item.value;
             tableList.value.push({ pass_host, id, hash_on, type, scheme })
         }
         console.log(tableList.value);

@@ -1,105 +1,136 @@
 <script setup>
-import { ElEmpty, ElTable, ElTableColumn, ElButton, ElCard, ElInput, ElDialog } from "element-plus";
-import { Search } from '@element-plus/icons-vue'
+import {
+    ElEmpty,
+    ElTable,
+    ElTableColumn,
+    ElButton,
+    ElCard,
+    ElInput,
+    ElDialog,
+} from "element-plus";
+import { Search } from "@element-plus/icons-vue";
 import { ref, reactive, inject, watch, onMounted } from "vue";
 import resBody from "@/components/resBody/resBody.vue";
 import routeBody from "@/components/resBody/routeBody.vue";
 import { getRouterById } from "@/api/index.js";
-import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
-let tableList = ref([])
-let apiType = inject('apiType');
+import {
+    getSsls,
+    getSslsById,
+    createSsls,
+    PatchSsls,
+    DeleteSsls,
+} from "@/api/module/ssl.js";
+let tableList = ref([]);
+let apiType = inject("apiType");
 let empty = ref(false);
-watch(apiType, (newValue) => {
-});
-let dialogVisible = ref(false)
+watch(apiType, (newValue) => { });
+let dialogVisible = ref(false);
 
-let searchId = ref('')
+
+// let k = {
+//     "cert": "-----BEGIN CERTIFICATE-----\n<你的证书内容>\n-----END CERTIFICATE-----",
+//     "key": "-----BEGIN RSA PRIVATE KEY-----\n<你的私钥内容>\n-----END RSA PRIVATE KEY-----",
+//     "snis": ["example.com", "*.example.com"]
+// };
+// createSsls(k, 2).then((res) => {
+//     console.log(res);
+// });
+// for (let i = 1; i < 60; i++) {
+//     let k = {
+//         certs: ["cert", "asd"],
+//         keys: ["key", "ked"],
+//         snis: ["t.com"],
+//     };
+//     createSsls(k, i).then((res) => {
+//         console.log(res);
+//     });
+// }
+
+let searchId = ref("");
 let search = (id) => {
     tableList.value = [];
-    getRouterById(id).then((res) => {
-        console.log(res.data);
-        let { uri, id, methods, hosts, remote_addrs } = res.data.value;
-        tableList.value.push({ uri, id, methods, hosts, remote_addrs })
-        if (tableList.value.length !== 0) {
-            empty.value = false
-        }
-    }).catch(() => {
-        if (tableList.value.length === 0) {
-            empty.value = true
-        }
-    })
-
-}
+    getSslsById(id)
+        .then((res) => {
+            console.log(res.data);
+            let { uri, id, methods, hosts, remote_addrs } = res.data.value;
+            tableList.value.push({ uri, id, methods, hosts, remote_addrs });
+            if (tableList.value.length !== 0) {
+                empty.value = false;
+            }
+        })
+        .catch(() => {
+            if (tableList.value.length === 0) {
+                empty.value = true;
+            }
+        });
+};
 let patch = ref("");
 
 let reflashList = (index) => {
     tableList.value.splice(index, 1);
     if (tableList.value.length === 0) {
-        empty.value = true
+        empty.value = true;
     }
-}
+};
 
 let loadList = () => {
     tableList.value = [];
-    getRouters().then((res) => {
+    getSsls().then((res) => {
         for (let item of res.data.list) {
             let { uri, id, methods, hosts, remote_addrs } = item.value;
-            tableList.value.push({ uri, id, methods, hosts, remote_addrs })
+            tableList.value.push({ uri, id, methods, hosts, remote_addrs });
         }
         if (tableList.value.length === 0) {
-            empty.value = true
+            empty.value = true;
         }
     });
-}
+};
 
 let handleDelete = (event) => {
-    DeleteRouterByID(event.row.id).then((res) => {
+    DeleteSsls(event.row.id).then((res) => {
         console.log(res);
     });
-    reflashList(event.$index)
-}
+    reflashList(event.$index);
+};
 
 let handlePatch = (event) => {
-    patch.value = event.row.id
-    dialogVisible.value = true
-}
+    patch.value = event.row.id;
+    dialogVisible.value = true;
+};
 
 onMounted(() => {
-    loadList()
-
-})
-
+    loadList();
+});
 
 const onBeforeSubmit = (index) => {
-    patch.value = ""
-    dialogVisible.value = true
-}
+    patch.value = "";
+    dialogVisible.value = true;
+};
 
 const onSubmit = () => {
-    dialogVisible.value = false
-}
+    dialogVisible.value = false;
+};
 </script>
 
 <template>
     <div>
-        <div style="display: flex; flex-direction: column; width: 100%;">
-            <el-card style="width: 100%;height: 80px;">
-                <div style="display: flex;">
+        <div style="display: flex; flex-direction: column; width: 100%">
+            <el-card style="width: 100%; height: 80px">
+                <div style="display: flex">
                     <el-input v-model="searchId" placeholder="根据id获取资源" class="input-with-select"
-                        style="width: 25%;margin-right: 6px;">
+                        style="width: 25%; margin-right: 6px">
                         <template #prepend>
                             <el-button :icon="Search" @click="search(searchId)" />
                         </template>
                     </el-input>
                     <el-button type="primary" @click="onBeforeSubmit(index)">创建资源</el-button>
                 </div>
-                <!-- <el-form :inline="true" :model="formInline" class="demo-form-inline">
-            <el-form-item v-for="(item, index) in RouteReflect">
-              <el-button type="primary" @click="onBeforeSubmit(index)"> {{ item.desc }}</el-button>
-            </el-form-item>
-          </el-form> -->
             </el-card>
-            <el-card style="margin-top: 10px;max-height: calc(-240px + 100vh);overflow: auto;">
+            <el-card style="
+          margin-top: 10px;
+          max-height: calc(-240px + 100vh);
+          overflow: auto;
+        ">
                 <el-empty description="数据暂无" v-if="empty" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
                     <el-table-column prop="uri" label="uri" />

@@ -1,3 +1,5 @@
+import Http from "@/utils/request.js";
+
 /**
  * 获取SSL证书列表
  * @returns {Promise<ApiResponse<Array<SSL>>>} 包含SSL证书列表的Promise
@@ -24,8 +26,8 @@ export function getSslsById(id) {
  * @param {number} [parms.validity_end] - 证书过期时间戳
  * @returns {Promise<ApiResponse<any>>} 包含创建结果的Promise
  */
-export function createSsls(parms) {
-  return Http.post(`/apisix/admin/ssls`, parms);
+export function createSsls(parms, id) {
+  return Http.put(`/apisix/admin/ssls/${id}`, parms);
 }
 
 /**

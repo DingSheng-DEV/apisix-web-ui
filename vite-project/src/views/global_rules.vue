@@ -5,13 +5,17 @@ import { ref, reactive, inject, watch, onMounted } from "vue";
 import resBody from "@/components/resBody/resBody.vue";
 import routeBody from "@/components/resBody/routeBody.vue";
 import { getRouterById } from "@/api/index.js";
-import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
+import { getRouters, getGlobal_rulesById, createGlobal_rules, PatchGlobal_rules, DeleteGlobal_rules } from "@/api/module/rules.js";
 let tableList = ref([])
 let apiType = inject('apiType');
 let empty = ref(false);
 watch(apiType, (newValue) => {
 });
 let dialogVisible = ref(false)
+
+let k = {
+
+}
 
 let searchId = ref('')
 let search = (id) => {
