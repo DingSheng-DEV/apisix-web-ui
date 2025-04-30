@@ -75,8 +75,7 @@
                 </el-form-item>
 
                 <el-form-item label="节点配置" prop="upstream.nodes">
-                    <key-value-input v-model="formData.upstream.nodes" key-placeholder="节点地址 (如: 127.0.0.1:8080)"
-                        value-placeholder="权重 (如: 100)" />
+                    <key-value-input @send-data="changeNodes" v-model="formData.upstream.nodes" />
                 </el-form-item>
             </el-card>
 
@@ -105,7 +104,26 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, defineProps, watch } from "vue";
+import { getRouterById } from "@/api/index.js"
+const props = defineProps({
+    patch: {
+        type: String,
+    },
+});
+
+watch(() => props.patch, (newValue) => {
+    if (newValue === "") return;
+    getRouterById(newValue).then((res) => {
+        console.log(res.data.value);
+        for (const key of Object.keys(res.data.value)) {
+            if (formData[key]) {
+                formData[key] = res.data.value[key]
+            }
+        }
+    })
+}, { immediate: true });
+
 import {
     ElButton,
     ElCard,
@@ -124,11 +142,16 @@ import {
 // 导入自定义组件
 import ArrayInput from "@/components/ArrayInput.vue";
 import KeyValueInput from "@/components/KeyValueInput.vue";
-import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
+import { getRouters, createRouters, PatchRouters } from "@/api/index.js";
 import { getNonEmptyValues } from "@/utils/index.js";
 // 表单引用
 const formRef = ref();
+const changeNodes = (data) => {
+    for (let item of data) {
+        formData.upstream.nodes[item.key] = Number(item.value)
+    }
 
+}
 // 初始表单数据
 let initialFormData = {
     uris: [],
@@ -150,7 +173,7 @@ let initialFormData = {
 };
 
 // 表单数据
-const formData = reactive(JSON.parse(JSON.stringify(initialFormData)));
+let formData = reactive(JSON.parse(JSON.stringify(initialFormData)));
 
 // HTTP方法选项
 const httpMethods = ref([
@@ -172,40 +195,23 @@ const rules = {
     "upstream.type": [
         { required: true, message: "请选择上游类型", trigger: "change" },
     ],
-    "upstream.nodes": [
-        {
-            validator: (rule, value, callback) => {
-                if (Object.keys(value).length === 0) {
-                    callback(new Error("至少需要配置一个节点"));
-                } else {
-                    callback();
-                }
-            },
-            trigger: "change",
-        },
-    ],
 };
 
 // 提交表单
 const submitForm = () => {
     let k = getNonEmptyValues(formData)
-    console.log(k);
-    k = {
-        "uri": "/index.html",
-        // "hosts": ["foo.com", "*.bar.com"],
-        // "remote_addrs": ["127.0.0.0/8"],
-        // "methods": ["PUT", "GET"],
-        // "enable_websocket": true,
-        "upstream": {
-            "type": "roundrobin",
-            "nodes": {
-                "127.0.0.1:1980": 1
-            }
-        }
+    if (props.patch !== "") {
+        console.log(k);
+        PatchRouters(k, props.patch).then((res) => {
+            console.log(res);
+        });
+        return
     }
     createRouters(k).then((res) => {
         console.log(res);
     });
+
+
 };
 
 // 重置表单

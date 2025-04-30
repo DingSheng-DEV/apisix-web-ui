@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue';
 import { ElButton, ElInput } from 'element-plus';
 import { Delete } from '@element-plus/icons-vue';
-
+const emit = defineEmits(['sendData'])
 const props = defineProps({
     modelValue: {
         type: Object,
@@ -11,19 +11,15 @@ const props = defineProps({
     },
     keyPlaceholder: {
         type: String,
-        default: '键'
     },
     valuePlaceholder: {
-        type: String,
-        default: '值'
+        type: Number,
     }
 });
 
-const emit = defineEmits(['update:modelValue']);
 
 const items = ref([]);
 
-// 将对象转换为数组
 const updateItems = () => {
     items.value = Object.entries(props.modelValue).map(([key, value]) => ({
         key,
@@ -31,7 +27,6 @@ const updateItems = () => {
     }));
 };
 
-// 将数组转换为对象
 const updateModel = () => {
     const newValue = {};
     items.value.forEach(item => {
@@ -40,6 +35,9 @@ const updateModel = () => {
         }
     });
 };
+const support = () => {
+    emit('sendData', items.value) // 触发事件并传递数据
+}
 
 // 初始化
 updateItems();
@@ -64,13 +62,13 @@ const removeItem = (index) => {
         <div class="key-value-input-header">
             <span style="margin-right: 16px;">键值对列表</span>
             <el-button type="text" @click="addItem">添加节点</el-button>
-            <el-button type="text" @click="addItem">提交</el-button>
+            <el-button type="text" @click="support">保存</el-button>
         </div>
 
         <div class="key-value-input-items" v-show="items.length !== 0">
             <div v-for="(item, index) in items" :key="index" class="key-value-input-item">
-                <el-input v-model="item.key" :placeholder="keyPlaceholder" />
-                <el-input v-model="item.value" :placeholder="valuePlaceholder" />
+                <el-input v-model="item.key" :placeholder="'节点地址 (如: 127.0.0.1:8080)'" />
+                <el-input v-model="item.value" :placeholder="'权重 (如: 100)'" />
                 <el-button type="danger" text @click="removeItem(index)" :icon="Delete" />
 
             </div>
