@@ -1,10 +1,8 @@
 <script setup>
 import { ElButton, ElCard, ElOption, ElSelect, ElInput, ElMenuItem, ElMenu, ElSubMenu, ElMenuItemGroup } from "element-plus";
-import { ref, onMounted, inject, reactive } from "vue";
+import { ref, onMounted, inject, reactive, watch } from "vue";
 import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
 let apiType = inject('apiType');
-let resouseActive = ref("");
-let globalActive = ref("");
 import { useRouter } from "vue-router";
 const route = useRouter();
 const changeType = (index) => {
@@ -19,37 +17,31 @@ const changeType = (index) => {
   }
 };
 
+const activeIndex = ref('') // 当前激活的菜单index
 const menuItems = reactive([
   {
     title: '资源配置',
     children: [
-      { index: '1-1', label: 'Router' },
-      { index: '1-2', label: 'Service' },
-      { index: '1-3', label: 'Upstream' },
+      { index: 'Router', label: 'Router' },
+      { index: 'Service', label: 'Service' },
+      { index: 'Upstream', label: 'Upstream' },
     ],
   },
   {
     title: '全局配置',
     children: [
-      { index: '2-1', label: 'SSL' },
-      { index: '2-2', label: '全局配置' },
+      { index: 'SSL', label: 'SSL' },
+      { index: 'global_rules', label: 'global_rules' },
     ],
   },
 ]);
-const global = [
-  {
-    value: "Service",
-    label: "Service",
-  },
-  {
-    value: "SSL",
-    label: "SSL",
-  },
-]
-
 onMounted(() => {
+  let localHash = window.location.pathname.split('/')[1];
 
+  activeIndex.value = localHash;
 })
+
+
 
 </script>
 
@@ -63,32 +55,14 @@ onMounted(() => {
           align-items: center;
           gap: 6px;
         ">
-        <el-menu default-active="2">
+        <el-menu :default-active="activeIndex" router style="width: 100%;">
           <el-sub-menu v-for="group in menuItems" :key="group.title" :index="group.children[0].index.split('-')[0]">
             <template #title><span>{{ group.title }}</span></template>
-            <el-menu-item v-for="item in group.children" :key="item.index" :index="item.index" @click="changeType">
+            <el-menu-item v-for="item in group.children" :key="item.index" :index="item.index">
               {{ item.label }}
             </el-menu-item>
           </el-sub-menu>
         </el-menu>
-        <!-- <el-menu default-active="2" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
-          style="width: 100%;" @click="changeType()">
-          <el-sub-menu index="1">
-            <template #title>
-              <span>资源配置</span>
-            </template>
-            <el-menu-item index="1-1">Router</el-menu-item>
-            <el-menu-item index="1-2">Service</el-menu-item>
-            <el-menu-item index="1-3">Upstream</el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="2">
-            <template #title>
-              <span>全局配置</span>
-            </template>
-            <el-menu-item index="2-1">SSL</el-menu-item>
-            <el-menu-item index="2-2">全局配置</el-menu-item>
-          </el-sub-menu>
-        </el-menu> -->
       </div>
     </el-card>
   </div>

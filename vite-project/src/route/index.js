@@ -21,6 +21,21 @@ const routes = [
         name: "Upstream",
         component: import("@/views/Upstream.vue"),
       },
+      {
+        path: "/SSL",
+        name: "SSL",
+        component: import("@/views/SSl.vue"),
+      },
+      {
+        path: "/global_rules",
+        name: "global_rules",
+        component: import("@/views/global_rules.vue"),
+      },
+      // {
+      //   path: "/ll",
+      //   name: "a",
+      //   component: import("@/views/Router.vue"),
+      // },
     ],
   },
 ];

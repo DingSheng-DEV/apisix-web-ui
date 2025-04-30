@@ -108,7 +108,7 @@ export function getUpstreams() {
  * @param {string} id - 上游ID
  * @returns {Promise<ApiResponse<Upstream>>} 包含上游详情的Promise
  */
-export function getUpstreams(id) {
+export function getUpstreamsById(id) {
   return Http.get(`/apisix/admin/upstreams/${id}`);
 }
 
