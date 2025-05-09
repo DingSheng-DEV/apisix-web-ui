@@ -23,35 +23,18 @@ const apiType = inject("apiType");
 const empty = ref(false);
 watch(apiType, (newValue) => { });
 const dialogVisible = ref(false);
-
-
-// let k = {
-//     "cert": "-----BEGIN CERTIFICATE-----\n<你的证书内容>\n-----END CERTIFICATE-----",
-//     "key": "-----BEGIN RSA PRIVATE KEY-----\n<你的私钥内容>\n-----END RSA PRIVATE KEY-----",
-//     "snis": ["example.com", "*.example.com"]
-// };
-// createSsls(k, 2).then((res) => {
-//     console.log(res);
-// });
-// for (let i = 1; i < 60; i++) {
-//     let k = {
-//         certs: ["cert", "asd"],
-//         keys: ["key", "ked"],
-//         snis: ["t.com"],
-//     };
-//     createSsls(k, i).then((res) => {
-//         console.log(res);
-//     });
-// }
-
 const searchId = ref("");
 const search = (id) => {
     tableList.value = [];
+    if (id === '') {
+        loadList()
+        return
+    }
     getSslsById(id)
         .then((res) => {
-            console.log(res.data);
-            const { uri, id, methods, hosts, remote_addrs } = res.data.value;
-            tableList.value.push({ uri, id, methods, hosts, remote_addrs });
+            console.log(res.data.value);
+            const { cert, id, key, snis, type } = res.data.value;
+            tableList.value.push({ cert, id, key, snis, type });
             if (tableList.value.length !== 0) {
                 empty.value = false;
             }
@@ -62,7 +45,7 @@ const search = (id) => {
             }
         });
 };
-const patch = ref("");
+let patch = ref("");
 
 const reflashList = (index) => {
     tableList.value.splice(index, 1);
@@ -74,9 +57,10 @@ const reflashList = (index) => {
 const loadList = () => {
     tableList.value = [];
     getSsls().then((res) => {
+
         for (const item of res.data.list) {
-            const { uri, id, methods, hosts, remote_addrs } = item.value;
-            tableList.value.push({ uri, id, methods, hosts, remote_addrs });
+            const { cert, id, key, snis, type } = item.value;
+            tableList.value.push({ cert, id, key, snis, type });
         }
         if (tableList.value.length === 0) {
             empty.value = true;
@@ -95,13 +79,11 @@ const handlePatch = (event) => {
     patch.value = event.row.id;
     dialogVisible.value = true;
 };
-const txt = () => {
-    const k = {
-        "cert": ` $(cat t/ certs / apisix.crt)`,
-    }
-    getSsls().then((res) => {
-        console.log(res);
-    })
+
+
+const handleClose = () => {
+    loadList()
+    dialogVisible.value = false
 }
 
 onMounted(() => {
@@ -130,8 +112,6 @@ const onSubmit = () => {
                         </template>
                     </el-input>
                     <el-button type="primary" @click="onBeforeSubmit(index)">创建资源</el-button>
-                    <el-button type="primary" @click="txt(index)">ettx</el-button>
-
                 </div>
             </el-card>
             <el-card style="
@@ -141,11 +121,19 @@ const onSubmit = () => {
         ">
                 <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
-                    <el-table-column prop="uri" label="uri" />
                     <el-table-column prop="id" label="id" />
-                    <el-table-column prop="hosts" label="hosts" />
-                    <el-table-column prop="methods" label="methods" />
-                    <el-table-column prop="remote_addrs" label="remote_addrs" />
+                    <el-table-column prop="cert" label="cert" width="150">
+                        <template #default="scope">
+                            <div class="truncated-text">{{ scope.row.cert }}</div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="key" label="key" width="150">
+                        <template #default="scope">
+                            <div class="truncated-text">{{ scope.row.key }}</div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="type" label="type" />
+                    <el-table-column prop="snis" label="snis" />
                     <el-table-column label="Operations">
                         <template #default="scope">
                             <el-button link type="primary" size="small" @click="handleDelete(scope)">Delete</el-button>
@@ -156,10 +144,17 @@ const onSubmit = () => {
             </el-card>
         </div>
 
-        <el-dialog v-model="dialogVisible" title="Parms">
-            <SSLBody></SSLBody>
+        <el-dialog v-model="dialogVisible" title="Parms" @close="handleClose">
+            <SSLBody :patch="patch"></SSLBody>
         </el-dialog>
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.truncated-text {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>

@@ -40,8 +40,11 @@ const dialogVisible = ref(false)
 const searchId = ref('')
 const search = (id) => {
     tableList.value = [];
+    if (id === '') {
+        loadList()
+        return
+    }
     getServicesId(id).then((res) => {
-        console.log(res.data);
         const { enable_websocket, id, upstream } = res.data.value;
         const { hash_on, type, scheme } = upstream
         tableList.value.push({ enable_websocket, id, hash_on, type, scheme })

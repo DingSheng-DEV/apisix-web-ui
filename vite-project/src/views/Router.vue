@@ -15,8 +15,11 @@ const dialogVisible = ref(false)
 const searchId = ref('')
 const search = (id) => {
     tableList.value = [];
+    if (id === '') {
+        loadList()
+        return
+    }
     getRouterById(id).then((res) => {
-        console.log(res.data);
         const { uri, id, methods, hosts, remote_addrs } = res.data.value;
         tableList.value.push({ uri, id, methods, hosts, remote_addrs })
         if (tableList.value.length !== 0) {

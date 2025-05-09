@@ -208,7 +208,6 @@ const props = defineProps({
 });
 
 watch(() => props.patch, (newValue) => {
-    console.log(newValue);
     if (newValue === "") {
         // 正确方法：逐个属性重置
         Object.assign(formData, JSON.parse(JSON.stringify(initialFormData)))

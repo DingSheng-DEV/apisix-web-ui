@@ -1,10 +1,11 @@
 <template>
     <div class="ssl-form-container">
-        <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+        <el-form :model="formData" label-width="120px" ref="formRef">
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
                     <span class="section-title">基本信息</span>
+                    <button @click="text" type="button">a</button>
                 </template>
 
                 <el-form-item label="状态" prop="status">
@@ -48,12 +49,14 @@
                     <el-divider content-position="left">额外证书 #{{ index + 1 }}</el-divider>
                     <el-form-item :label="'证书内容 #' + (index + 1)" :prop="'certs.' + index">
                         <div class="cert-input-group">
-                            <el-input v-model="formData.certs[index]" type="textarea" :rows="3" placeholder="请输入PEM格式的证书内容" />
+                            <el-input v-model="formData.certs[index]" type="textarea" :rows="3"
+                                placeholder="请输入PEM格式的证书内容" />
                             <el-button type="danger" @click="removeExtraCert(index)" icon="Delete" circle />
                         </div>
                     </el-form-item>
                     <el-form-item :label="'私钥内容 #' + (index + 1)" :prop="'keys.' + index">
-                        <el-input v-model="formData.keys[index]" type="textarea" :rows="3" placeholder="请输入PEM格式的私钥内容" />
+                        <el-input v-model="formData.keys[index]" type="textarea" :rows="3"
+                            placeholder="请输入PEM格式的私钥内容" />
                     </el-form-item>
                 </div>
             </el-card>
@@ -72,7 +75,8 @@
                     <el-input-number v-model="formData.client.depth" :min="0" :max="10" />
                 </el-form-item>
 
-                <array-input v-model="formData.client.skip_mtls_uri_regex" label="跳过MTLS的URI正则" placeholder="例如: /api/public/.*" />
+                <array-input v-model="formData.client.skip_mtls_uri_regex" label="跳过MTLS的URI正则"
+                    placeholder="例如: /api/public/.*" />
             </el-card>
 
             <!-- 高级配置 -->
@@ -81,7 +85,8 @@
                     <span class="section-title">高级配置</span>
                 </template>
 
-                <array-input v-model="formData.ssl_protocols" label="SSL协议版本" placeholder="例如: TLSv1.2" :options="sslProtocolOptions" />
+                <array-input v-model="formData.ssl_protocols" label="SSL协议版本" placeholder="例如: TLSv1.2"
+                    :options="sslProtocolOptions" />
 
                 <el-form-item label="标签" prop="labels">
                     <key-value-input @send-data="updateLabels" v-model="formData.labels" />
@@ -100,6 +105,7 @@
 <script setup>
 import { ref, reactive, defineProps, watch } from "vue";
 import { getSslsById } from "@/api/module/ssl.js";
+import keys from "../../../public/keys.js";
 import {
     ElButton,
     ElCard,
@@ -119,6 +125,26 @@ import KeyValueInput from "@/components/KeyValueInput.vue";
 import { createSsls, PatchSsls } from "@/api/module/ssl.js";
 import { getNonEmptyValues } from "@/utils/index.js";
 
+// 初始表单数据
+let initialFormData = {
+    cert: "",
+    key: "",
+    cert: keys.public,
+    key: keys.private,
+    snis: ["example.com"],
+    type: "server",
+    status: 1,
+    ssl_protocols: [],
+    labels: {},
+    client: {
+        ca: "",
+        depth: 1,
+        skip_mtls_uri_regex: []
+    }
+};
+
+// 表单数据
+let formData = reactive(JSON.parse(JSON.stringify(initialFormData)));
 const props = defineProps({
     patch: {
         type: String,
@@ -128,7 +154,11 @@ const props = defineProps({
 
 // 监听patch属性变化，加载已有SSL数据
 watch(() => props.patch, (newValue) => {
-    if (newValue === "") return;
+
+    if (newValue === "") {
+        Object.assign(formData, JSON.parse(JSON.stringify(initialFormData)))
+        return;
+    }
     getSslsById(newValue).then((res) => {
         console.log(res.data.value);
         for (const key of Object.keys(res.data.value)) {
@@ -165,26 +195,6 @@ const sslProtocolOptions = ref([
     "TLSv1.3",
 ]);
 
-// 初始表单数据
-let initialFormData = {
-    cert: "",
-    key: "",
-    certs: [],
-    keys: [],
-    snis: [],
-    type: "server",
-    status: 1,
-    ssl_protocols: [],
-    labels: {},
-    client: {
-        ca: "",
-        depth: 1,
-        skip_mtls_uri_regex: []
-    }
-};
-
-// 表单数据
-let formData = reactive(JSON.parse(JSON.stringify(initialFormData)));
 
 // 添加额外证书
 const addExtraCert = () => {
@@ -198,27 +208,30 @@ const removeExtraCert = (index) => {
     formData.keys.splice(index, 1);
 };
 
-// 表单验证规则
-const rules = {
-    cert: [
-        { required: true, message: "请输入证书内容", trigger: "blur" },
-    ],
-    key: [
-        { required: true, message: "请输入私钥内容", trigger: "blur" },
-    ],
-    snis: [
-        { type: 'array', required: true, message: "请至少添加一个SNI", trigger: "change" }
-    ]
-};
+const text = () => {
+    let a = {
+        "cert": keys.public,
+        "key": keys.private,
+        "snis": ["example.com"]
+    }
+    let id = 1
+
+    createSsls(a, id).then((res) => {
+        ElMessage.success("SSL证书创建成功");
+        console.log(res);
+    }).catch(err => {
+        ElMessage.error("SSL证书创建失败: " + err.message);
+    });
+}
 
 // 提交表单
 const submitForm = () => {
     formRef.value.validate((valid) => {
         if (valid) {
             const data = getNonEmptyValues(formData);
-            
+            let { cert, key, snis } = data;
             if (props.patch !== "") {
-                PatchSsls(data, props.patch).then((res) => {
+                PatchSsls({ cert, key, snis }, props.patch).then((res) => {
                     ElMessage.success("SSL证书更新成功");
                     console.log(res);
                 }).catch(err => {
@@ -226,10 +239,11 @@ const submitForm = () => {
                 });
                 return;
             }
-            
+
+
             // 生成随机ID或使用其他逻辑获取ID
             const id = Date.now().toString();
-            createSsls(data, id).then((res) => {
+            createSsls({ cert, key, snis }, id).then((res) => {
                 ElMessage.success("SSL证书创建成功");
                 console.log(res);
             }).catch(err => {
