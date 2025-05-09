@@ -18,11 +18,11 @@ import {
     PatchSsls,
     DeleteSsls,
 } from "@/api/module/ssl.js";
-let tableList = ref([]);
-let apiType = inject("apiType");
-let empty = ref(false);
+const tableList = ref([]);
+const apiType = inject("apiType");
+const empty = ref(false);
 watch(apiType, (newValue) => { });
-let dialogVisible = ref(false);
+const dialogVisible = ref(false);
 
 
 // let k = {
@@ -44,13 +44,13 @@ let dialogVisible = ref(false);
 //     });
 // }
 
-let searchId = ref("");
-let search = (id) => {
+const searchId = ref("");
+const search = (id) => {
     tableList.value = [];
     getSslsById(id)
         .then((res) => {
             console.log(res.data);
-            let { uri, id, methods, hosts, remote_addrs } = res.data.value;
+            const { uri, id, methods, hosts, remote_addrs } = res.data.value;
             tableList.value.push({ uri, id, methods, hosts, remote_addrs });
             if (tableList.value.length !== 0) {
                 empty.value = false;
@@ -62,20 +62,20 @@ let search = (id) => {
             }
         });
 };
-let patch = ref("");
+const patch = ref("");
 
-let reflashList = (index) => {
+const reflashList = (index) => {
     tableList.value.splice(index, 1);
     if (tableList.value.length === 0) {
         empty.value = true;
     }
 };
 
-let loadList = () => {
+const loadList = () => {
     tableList.value = [];
     getSsls().then((res) => {
-        for (let item of res.data.list) {
-            let { uri, id, methods, hosts, remote_addrs } = item.value;
+        for (const item of res.data.list) {
+            const { uri, id, methods, hosts, remote_addrs } = item.value;
             tableList.value.push({ uri, id, methods, hosts, remote_addrs });
         }
         if (tableList.value.length === 0) {
@@ -84,19 +84,19 @@ let loadList = () => {
     });
 };
 
-let handleDelete = (event) => {
+const handleDelete = (event) => {
     DeleteSsls(event.row.id).then((res) => {
         console.log(res);
     });
     reflashList(event.$index);
 };
 
-let handlePatch = (event) => {
+const handlePatch = (event) => {
     patch.value = event.row.id;
     dialogVisible.value = true;
 };
-let txt = () => {
-    let k = {
+const txt = () => {
+    const k = {
         "cert": ` $(cat t/ certs / apisix.crt)`,
     }
     getSsls().then((res) => {

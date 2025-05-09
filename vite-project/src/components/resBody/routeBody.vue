@@ -116,7 +116,11 @@ const props = defineProps({
 });
 
 watch(() => props.patch, (newValue) => {
-    if (newValue === "") return;
+    if (newValue === "") {
+        // 正确方法：逐个属性重置
+        Object.assign(formData, JSON.parse(JSON.stringify(initialFormData)))
+        return;
+    }
     getRouterById(newValue).then((res) => {
         console.log(res.data.value);
         for (const key of Object.keys(res.data.value)) {

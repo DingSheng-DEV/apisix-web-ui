@@ -2,16 +2,15 @@
 import { ElEmpty, ElTable, ElTableColumn, ElButton, ElCard, ElInput, ElDialog } from "element-plus";
 import result from '@/components/main/result.vue';
 import { ref, reactive, provide, inject, watch, onMounted } from "vue";
-import resBody from "@/components/resBody/resBody.vue";
 import ServiceBody from "@/components/resBody/serviceBody.vue";
 import { getServices, DeleteServicesID, getServicesId, createServices } from "@/api/index.js";
 import { Search } from '@element-plus/icons-vue'
-let tableList = ref([])
-let apiType = inject('apiType');
-let empty = ref(false);
+const tableList = ref([])
+const apiType = inject('apiType');
+const empty = ref(false);
 watch(apiType, (newValue) => {
 });
-let dialogVisible = ref(false)
+const dialogVisible = ref(false)
 
 
 // for (let i = 0; i < 60; i++) {
@@ -38,13 +37,13 @@ let dialogVisible = ref(false)
 //     });
 // }
 
-let searchId = ref('')
-let search = (id) => {
+const searchId = ref('')
+const search = (id) => {
     tableList.value = [];
     getServicesId(id).then((res) => {
         console.log(res.data);
-        let { enable_websocket, id, upstream } = res.data.value;
-        let { hash_on, type, scheme } = upstream
+        const { enable_websocket, id, upstream } = res.data.value;
+        const { hash_on, type, scheme } = upstream
         tableList.value.push({ enable_websocket, id, hash_on, type, scheme })
         if (tableList.value.length !== 0) {
             empty.value = false
@@ -56,21 +55,21 @@ let search = (id) => {
     })
 
 }
-let patch = ref("");
-let total = ref(0);
-let reflashList = (index) => {
+const patch = ref("");
+const total = ref(0);
+const reflashList = (index) => {
     tableList.value.splice(index, 1);
     if (tableList.value.length === 0) {
         empty.value = true
     }
 }
 
-let loadList = () => {
+const loadList = () => {
     tableList.value = [];
     getServices().then((res) => {
         total.value = res.data.list.length + 1;
-        for (let item of res.data.list) {
-            let { enable_websocket, id, upstream } = item.value;
+        for (const item of res.data.list) {
+            const { enable_websocket, id, upstream } = item.value;
 
             if (!upstream) {
                 tableList.value.push({ enable_websocket, id, })
@@ -98,10 +97,16 @@ let loadList = () => {
         if (tableList.value.length === 0) {
             empty.value = true
         }
+        // 根据 id 排序
+        tableList.value.sort((a, b) => {
+            if (Number(a.id) < Number(b.id)) return -1; // 如果 a.id 小于 b.id，返回 -1
+            if (Number(a.id) > Number(b.id)) return 1;  // 如果 a.id 大于 b.id，返回 1
+            return 0;                   // 如果 a.id 等于 b.id，返回 0
+        });
     });
 }
 
-let handleDelete = (event) => {
+const handleDelete = (event) => {
     DeleteServicesID(event.row.id).then((res) => {
         console.log(res);
     });
@@ -112,7 +117,7 @@ const handleClose = () => {
     dialogVisible.value = false
 }
 
-let handlePatch = (event) => {
+const handlePatch = (event) => {
     patch.value = event.row.id
     dialogVisible.value = true
 }

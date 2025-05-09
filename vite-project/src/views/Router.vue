@@ -2,24 +2,22 @@
 import { ElEmpty, ElTable, ElTableColumn, ElButton, ElCard, ElInput, ElDialog } from "element-plus";
 import { Search } from '@element-plus/icons-vue'
 import { ref, reactive, inject, watch, onMounted } from "vue";
-import resBody from "@/components/resBody/resBody.vue";
 import routeBody from "@/components/resBody/routeBody.vue";
 import { getRouterById } from "@/api/index.js";
 import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
-import { lo } from "element-plus/es/locales.mjs";
-let tableList = ref([])
-let apiType = inject('apiType');
-let empty = ref(false);
+const tableList = ref([])
+const apiType = inject('apiType');
+const empty = ref(false);
 watch(apiType, (newValue) => {
 });
-let dialogVisible = ref(false)
+const dialogVisible = ref(false)
 
-let searchId = ref('')
-let search = (id) => {
+const searchId = ref('')
+const search = (id) => {
     tableList.value = [];
     getRouterById(id).then((res) => {
         console.log(res.data);
-        let { uri, id, methods, hosts, remote_addrs } = res.data.value;
+        const { uri, id, methods, hosts, remote_addrs } = res.data.value;
         tableList.value.push({ uri, id, methods, hosts, remote_addrs })
         if (tableList.value.length !== 0) {
             empty.value = false
@@ -31,38 +29,44 @@ let search = (id) => {
     })
 
 }
-let patch = ref("");
+const patch = ref("");
 
-let reflashList = (index) => {
+const reflashList = (index) => {
     tableList.value.splice(index, 1);
     if (tableList.value.length === 0) {
         empty.value = true
     }
 }
 
-let loadList = () => {
+const loadList = () => {
     tableList.value = [];
     getRouters().then((res) => {
-        for (let item of res.data.list) {
-            let { uri, uris, id, methods, hosts, remote_addrs } = item.value;
-            if (uri) { uri = uri }
-            if (uris) { uri = uris }
-            tableList.value.push({ uri, id, methods, hosts, remote_addrs })
+        for (const item of res.data.list) {
+            const { uri, uris, id, methods, hosts, remote_addrs } = item.value;
+            let finalUri = uri;
+            if (uris) { finalUri = uris }
+            tableList.value.push({ uri: finalUri, id, methods, hosts, remote_addrs })
         }
         if (tableList.value.length === 0) {
             empty.value = true
         }
+        // 根据 id 排序
+        tableList.value.sort((a, b) => {
+            if (Number(a.id) < Number(b.id)) return -1; // 如果 a.id 小于 b.id，返回 -1
+            if (Number(a.id) > Number(b.id)) return 1;  // 如果 a.id 大于 b.id，返回 1
+            return 0;                   // 如果 a.id 等于 b.id，返回 0
+        });
     });
 }
 
-let handleDelete = (event) => {
+const handleDelete = (event) => {
     DeleteRouterByID(event.row.id).then((res) => {
         console.log(res);
     });
     reflashList(event.$index)
 }
 
-let handlePatch = (event) => {
+const handlePatch = (event) => {
     patch.value = event.row.id
     dialogVisible.value = true
 }

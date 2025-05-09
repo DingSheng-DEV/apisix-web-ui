@@ -1,20 +1,50 @@
 <script setup>
 import { ElEmpty, ElTable, ElTableColumn, ElButton, ElCard, ElInput, ElDialog } from "element-plus";
-import result from '@/components/main/result.vue';
 import { ref, reactive, provide, inject, watch, onMounted } from "vue";
-import resBody from "@/components/resBody/resBody.vue";
 import upstreamBody from "@/components/resBody/upstreamBody.vue";
 import { getUpstreams, getUpstreamsById, createUpstreams, DeleteUpstreamsID } from "@/api/index.js";
 import { Search } from '@element-plus/icons-vue'
-let tableList = ref([])
-let apiType = inject('apiType');
-let empty = ref(false);
+const tableList = ref([])
+const apiType = inject('apiType');
+const empty = ref(false);
 watch(apiType, (newValue) => {
 });
-let dialogVisible = ref(false)
+const dialogVisible = ref(false)
+const searchId = ref('')
+const patch = ref("");
+const total = ref(0);
+const reflashList = (index) => {
+    tableList.value.splice(index, 1);
+    if (tableList.value.length === 0) {
+        empty.value = true
+    }
+}
+const loadList = () => {
+    tableList.value = [];
+    getUpstreams().then((res) => {
+        total.value = res.data.list.length + 1;
+        for (let item of res.data.list) {
+            let { id, hash_on, scheme, type, pass_host } = item.value;
+            tableList.value.push({ pass_host, id, hash_on, type, scheme })
+        }
+        if (tableList.value.length === 0) {
+            empty.value = true
+        }
+        // 根据 id 排序
+        tableList.value.sort((a, b) => {
+            if (Number(a.id) < Number(b.id)) return -1; // 如果 a.id 小于 b.id，返回 -1
+            if (Number(a.id) > Number(b.id)) return 1;  // 如果 a.id 大于 b.id，返回 1
+            return 0;                   // 如果 a.id 等于 b.id，返回 0
+        });
+    });
+    console.log(tableList.value);
+}
 
-let searchId = ref('')
-let search = (id) => {
+const search = (id) => {
+    if (id === '') {
+        loadList()
+        return
+    }
     tableList.value = [];
     getUpstreamsById(id).then((res) => {
         console.log(res.data);
@@ -30,32 +60,8 @@ let search = (id) => {
     })
 
 }
-let patch = ref("");
-let total = ref(0);
 
-
-let reflashList = (index) => {
-    tableList.value.splice(index, 1);
-    if (tableList.value.length === 0) {
-        empty.value = true
-    }
-}
-
-let loadList = () => {
-    tableList.value = [];
-    getUpstreams().then((res) => {
-        total.value = res.data.list.length + 1;
-        for (let item of res.data.list) {
-            let { id, hash_on, scheme, type, pass_host } = item.value;
-            tableList.value.push({ pass_host, id, hash_on, type, scheme })
-        }
-        if (tableList.value.length === 0) {
-            empty.value = true
-        }
-    });
-}
-
-let handleDelete = (event) => {
+const handleDelete = (event) => {
     DeleteUpstreamsID(event.row.id).then((res) => {
         console.log(res);
     });
@@ -67,7 +73,7 @@ const handleClose = () => {
     dialogVisible.value = false
 }
 
-let handlePatch = (event) => {
+const handlePatch = (event) => {
     patch.value = event.row.id
     dialogVisible.value = true
 }
