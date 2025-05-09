@@ -121,8 +121,8 @@ export function getUpstreamsById(id) {
  * @param {Object} [parms.timeout] - 超时设置 {connect: ms, send: ms, read: ms}
  * @returns {Promise<ApiResponse<any>>} 包含创建结果的Promise
  */
-export function createUpstreams(parms) {
-  return Http.post(`/apisix/admin/upstreams`, parms);
+export function createUpstreams(parms, id) {
+  return Http.put(`/apisix/admin/upstreams/${id}`, parms);
 }
 
 /**

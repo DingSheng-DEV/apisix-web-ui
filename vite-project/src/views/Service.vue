@@ -57,7 +57,7 @@ let search = (id) => {
 
 }
 let patch = ref("");
-
+let total = ref(0);
 let reflashList = (index) => {
     tableList.value.splice(index, 1);
     if (tableList.value.length === 0) {
@@ -68,12 +68,32 @@ let reflashList = (index) => {
 let loadList = () => {
     tableList.value = [];
     getServices().then((res) => {
-        console.log(res.data.list);
-
+        total.value = res.data.list.length + 1;
         for (let item of res.data.list) {
             let { enable_websocket, id, upstream } = item.value;
-            let { hash_on, type, scheme } = upstream
-            tableList.value.push({ enable_websocket, id, hash_on, type, scheme })
+
+            if (!upstream) {
+                tableList.value.push({ enable_websocket, id, })
+            }
+            if (upstream) {
+                let { hash_on, type, scheme } = upstream
+                // 如果 hash_on 是 undefined，设置为默认值
+                if (hash_on === undefined) {
+                    hash_on = 'defaultHash';
+                }
+
+                // 如果 hash_on 是 undefined，设置为默认值
+                if (type === undefined) {
+                    type = 'defaultHash';
+                }
+
+                // 如果 hash_on 是 undefined，设置为默认值
+                if (scheme === undefined) {
+                    scheme = 'defaultHash';
+                }
+
+                tableList.value.push({ enable_websocket, id, hash_on, type, scheme })
+            }
         }
         if (tableList.value.length === 0) {
             empty.value = true
@@ -87,6 +107,10 @@ let handleDelete = (event) => {
     });
     reflashList(event.$index)
 }
+const handleClose = () => {
+    loadList()
+    dialogVisible.value = false
+}
 
 let handlePatch = (event) => {
     patch.value = event.row.id
@@ -95,7 +119,6 @@ let handlePatch = (event) => {
 
 onMounted(() => {
     loadList()
-
 })
 
 
@@ -124,7 +147,7 @@ const onSubmit = () => {
                 </div>
             </el-card>
             <el-card style="margin-top: 10px;max-height: calc(-240px + 100vh);overflow: auto;">
-                <el-empty description="数据暂无" v-if="empty" />
+                <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
                     <el-table-column prop="id" label="id" />
                     <el-table-column prop="enable_websocket" label="enable_websocket" />
@@ -142,28 +165,7 @@ const onSubmit = () => {
         </div>
 
         <el-dialog v-model="dialogVisible" title="Parms" :before-close="handleClose">
-            <ServiceBody></ServiceBody>
-            <!-- <div v-for="(value, key) in formData"
-                style="display: flex;gap: 6px;margin: 5px 0px;align-items: center;">
-                <span style="width: 12%;text-align: center;">{{ key }}</span>
-                <el-input style="width: 75%;" :value="value">{{ key }}</el-input>
-    </div>
-    <div>
-        <span>body:</span>
-    </div>
-    <div v-for="(value, key) in formBody"
-        style="display: flex;gap: 6px;margin: 5px 0px;align-items: center;justify-content: space-between;padding: 0 20px;">
-        <span style="text-align: center;">{{ key }}:{{ value }}</span>
-        <el-input style="width: 25%;"></el-input>
-    </div> -->
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="dialogVisible = false">取消</el-button>
-                    <el-button type="primary" @click="onSubmit">
-                        发送
-                    </el-button>
-                </span>
-            </template>
+            <ServiceBody :patch="patch" :total="total"></ServiceBody>
         </el-dialog>
     </div>
 </template>

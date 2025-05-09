@@ -6,6 +6,7 @@ import resBody from "@/components/resBody/resBody.vue";
 import routeBody from "@/components/resBody/routeBody.vue";
 import { getRouterById } from "@/api/index.js";
 import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
+import { lo } from "element-plus/es/locales.mjs";
 let tableList = ref([])
 let apiType = inject('apiType');
 let empty = ref(false);
@@ -43,7 +44,9 @@ let loadList = () => {
     tableList.value = [];
     getRouters().then((res) => {
         for (let item of res.data.list) {
-            let { uri, id, methods, hosts, remote_addrs } = item.value;
+            let { uri, uris, id, methods, hosts, remote_addrs } = item.value;
+            if (uri) { uri = uri }
+            if (uris) { uri = uris }
             tableList.value.push({ uri, id, methods, hosts, remote_addrs })
         }
         if (tableList.value.length === 0) {
@@ -69,6 +72,10 @@ onMounted(() => {
 
 })
 
+const handleClose = () => {
+    loadList()
+    dialogVisible.value = false
+}
 
 const onBeforeSubmit = (index) => {
     patch.value = ""
@@ -93,14 +100,9 @@ const onSubmit = () => {
                     </el-input>
                     <el-button type="primary" @click="onBeforeSubmit(index)">创建资源</el-button>
                 </div>
-                <!-- <el-form :inline="true" :model="formInline" class="demo-form-inline">
-            <el-form-item v-for="(item, index) in RouteReflect">
-              <el-button type="primary" @click="onBeforeSubmit(index)"> {{ item.desc }}</el-button>
-            </el-form-item>
-          </el-form> -->
             </el-card>
             <el-card style="margin-top: 10px;max-height: calc(-240px + 100vh);overflow: auto;">
-                <el-empty description="数据暂无" v-if="empty" />
+                <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
                     <el-table-column prop="uri" label="uri" />
                     <el-table-column prop="id" label="id" />
@@ -117,7 +119,7 @@ const onSubmit = () => {
             </el-card>
         </div>
 
-        <el-dialog v-model="dialogVisible" title="Parms">
+        <el-dialog v-model="dialogVisible" title="Parms" :before-close="handleClose">
             <routeBody :patch></routeBody>
         </el-dialog>
     </div>

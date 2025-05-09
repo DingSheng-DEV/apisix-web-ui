@@ -31,6 +31,8 @@ let search = (id) => {
 
 }
 let patch = ref("");
+let total = ref(0);
+
 
 let reflashList = (index) => {
     tableList.value.splice(index, 1);
@@ -42,12 +44,11 @@ let reflashList = (index) => {
 let loadList = () => {
     tableList.value = [];
     getUpstreams().then((res) => {
+        total.value = res.data.list.length + 1;
         for (let item of res.data.list) {
             let { id, hash_on, scheme, type, pass_host } = item.value;
             tableList.value.push({ pass_host, id, hash_on, type, scheme })
         }
-        console.log(tableList.value);
-
         if (tableList.value.length === 0) {
             empty.value = true
         }
@@ -59,6 +60,11 @@ let handleDelete = (event) => {
         console.log(res);
     });
     reflashList(event.$index)
+}
+
+const handleClose = () => {
+    loadList()
+    dialogVisible.value = false
 }
 
 let handlePatch = (event) => {
@@ -79,6 +85,7 @@ const onBeforeSubmit = (index) => {
 const onSubmit = () => {
     dialogVisible.value = false
 }
+
 </script>
 
 <template>
@@ -96,7 +103,7 @@ const onSubmit = () => {
                 </div>
             </el-card>
             <el-card style="margin-top: 10px;max-height: calc(-240px + 100vh);overflow: auto;">
-                <el-empty description="数据暂无" v-if="empty" />
+                <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
                     <el-table-column prop="id" label="id" />
                     <el-table-column prop="pass_host" label="pass_host" />
@@ -114,7 +121,7 @@ const onSubmit = () => {
         </div>
 
         <el-dialog v-model="dialogVisible" title="Parms" :before-close="handleClose">
-            <upstreamBody></upstreamBody>
+            <upstreamBody :total="total" :patch="patch"></upstreamBody>
         </el-dialog>
     </div>
 </template>

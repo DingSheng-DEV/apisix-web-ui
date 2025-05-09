@@ -1,6 +1,6 @@
 <template>
     <div class="upstream-form-container">
-        <el-form :model="formData" label-width="150px" :rules="rules" ref="formRef">
+        <el-form :model="formData" label-width="150px" ref="formRef">
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
@@ -35,38 +35,38 @@
                         <el-form-item label="负载均衡算法" prop="type">
                             <el-select v-model="formData.type" placeholder="请选择负载均衡算法">
                                 <el-option label="Round Robin" value="roundrobin" />
-                                <el-option label="一致性哈希" value="chash" />
-                                <el-option label="最少连接" value="least_conn" />
+                                <el-option label="一致性哈希" value="roundrobin" />
+                                <el-option label="最少连接" value="roundrobin" />
                             </el-select>
                         </el-form-item>
                     </el-col>
                 </el-row>
 
-                <el-row :gutter="20" v-if="formData.type === 'chash'">
+                <el-row :gutter="20">
                     <el-col :span="12">
                         <el-form-item label="哈希键类型" prop="hash_on">
                             <el-select v-model="formData.hash_on" placeholder="请选择哈希键类型">
-                                <el-option label="消费者" value="consumer" />
-                                <el-option label="Header" value="header" />
-                                <el-option label="Cookie" value="cookie" />
-                                <el-option label="变量" value="variable" />
+                                <el-option label="消费者" value="vars" />
+                                <el-option label="Header" value="vars" />
+                                <el-option label="Cookie" value="vars" />
+                                <el-option label="变量" value="vars" />
                             </el-select>
                         </el-form-item>
                     </el-col>
-                    <el-col :span="12">
+                    <!-- <el-col :span="12">
                         <el-form-item label="哈希键值" prop="key">
                             <el-input v-model="formData.key" placeholder="请输入哈希键值" />
                         </el-form-item>
-                    </el-col>
+                    </el-col> -->
                 </el-row>
 
                 <el-form-item label="重试次数" prop="retries">
                     <el-input-number v-model="formData.retries" :min="0" />
                 </el-form-item>
-
+                <!-- 
                 <el-form-item label="客户端证书ID" prop="tls.client_cert_id">
                     <el-input v-model="formData['tls.client_cert_id']" placeholder="请输入客户端证书ID" />
-                </el-form-item>
+                </el-form-item> -->
             </el-card>
 
             <!-- 节点配置部分 -->
@@ -75,11 +75,11 @@
                     <span class="section-title">节点配置</span>
                 </template>
 
-                <key-value-input v-model="formData.nodes" key-placeholder="节点地址 (如: 127.0.0.1:8080)"
-                    value-placeholder="权重 (如: 100)" />
+                <key-value-input v-model="formData.nodes" @send-data="updateNodes"
+                    key-placeholder="节点地址 (如: 127.0.0.1:8080)" value-placeholder="权重 (如: 100)" />
             </el-card>
             <!-- 健康检查配置 -->
-            <el-card class="form-section">
+            <!-- <el-card class="form-section">
                 <template #header>
                     <span class="section-title">健康检查配置</span>
                 </template>
@@ -87,17 +87,17 @@
                 <key-value-input v-model="formData.checks" key-placeholder="检查类型" value-placeholder="检查配置(JSON)" />
 
                 <el-alert title="健康检查配置需要输入有效的JSON格式" type="info" :closable="false" />
-            </el-card>
+            </el-card> -->
 
             <!-- 标签配置 -->
-            <el-card class="form-section">
+            <!-- <el-card class="form-section">
                 <template #header>
                     <span class="section-title">标签配置</span>
                 </template>
 
                 <key-value-input v-model="formData.labels" key-placeholder="标签键 (如: env)"
                     value-placeholder="标签值 (如: production)" />
-            </el-card>
+            </el-card> -->
 
             <!-- 表单操作 -->
             <div class="form-actions">
@@ -109,7 +109,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, defineProps } from 'vue';
+import { getNonEmptyValues } from "@/utils/index.js";
+import { createUpstreams, getUpstreamsById, PatchUpstreams } from "@/api/index.js";
 import {
     ElButton,
     ElCard,
@@ -128,9 +130,18 @@ import {
 // 导入自定义组件
 import KeyValueInput from '@/components/KeyValueInput.vue';
 
+
+
 // 表单引用
 const formRef = ref();
-
+const props = defineProps({
+    total: {
+        type: Number,
+    },
+    patch: {
+        type: String,
+    },
+})
 // 初始表单数据
 const initialFormData = {
     retries: 1,
@@ -149,32 +160,6 @@ const initialFormData = {
 // 表单数据
 const formData = reactive(JSON.parse(JSON.stringify(initialFormData)));
 
-// 表单验证规则
-const rules = {
-    name: [
-        { required: true, message: '请输入上游名称', trigger: 'blur' },
-        { min: 2, max: 50, message: '长度在2到50个字符之间', trigger: 'blur' }
-    ],
-    scheme: [
-        { required: true, message: '请选择协议类型', trigger: 'change' }
-    ],
-    nodes: [
-        {
-            validator: (rule, value, callback) => {
-                if (Object.keys(value).length === 0) {
-                    callback(new Error('至少需要配置一个节点'));
-                } else {
-                    callback();
-                }
-            },
-            trigger: 'change'
-        }
-    ],
-    'tls.client_cert_id': [
-        { pattern: /^[a-zA-Z0-9_-]+$/, message: '只能包含字母、数字、下划线和横线', trigger: 'blur' }
-    ]
-};
-
 // 监听负载均衡算法变化
 watch(() => formData.type, (newVal) => {
     if (newVal !== 'chash') {
@@ -183,31 +168,51 @@ watch(() => formData.type, (newVal) => {
     }
 });
 
-// 提交表单
-const submitForm = async () => {
-    try {
-        await formRef.value.validate();
-
-        // 验证健康检查配置是否为有效JSON
-        try {
-            Object.values(formData.checks).forEach(value => {
-                if (value) JSON.parse(value);
-            });
-        } catch (e) {
-            throw new Error('健康检查配置必须为有效的JSON格式');
-        }
-
-        console.log('提交数据:', JSON.parse(JSON.stringify(formData)));
-        ElMessage.success('提交成功');
-        // 这里可以添加实际的提交逻辑
-    } catch (error) {
-        ElMessage.error(error.message || '请检查表单填写是否正确');
+watch(() => props.patch, (newValue) => {
+    if (newValue === "") {
+        // 正确方法：逐个属性重置
+        Object.assign(formData, JSON.parse(JSON.stringify(initialFormData)))
+        return;
     }
-};
+    getUpstreamsById(newValue).then((res) => {
+        for (const key of Object.keys(res.data.value)) {
+            if (formData[key] !== undefined) {
+                formData[key] = res.data.value[key]
+            }
+        }
+    })
+}, { immediate: true });
+
+
+
+// 提交表单
+const submitForm = () => {
+    let k = getNonEmptyValues(formData)
+    if (props.patch !== "") {
+        PatchUpstreams(k, props.patch).then((res) => {
+            console.log(res);
+        });
+        return
+    }
+
+    createUpstreams(k, props.total).then((res) => {
+        console.log(res);
+    })
+}
 
 // 重置表单
 const resetForm = () => {
     Object.assign(formData, JSON.parse(JSON.stringify(initialFormData)));
+};
+
+// 更新节点配置
+const updateNodes = (data) => {
+    formData.nodes = {};
+    for (let item of data) {
+        if (item.key && item.value) {
+            formData.nodes[item.key] = Number(item.value);
+        }
+    }
 };
 </script>
 

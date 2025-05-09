@@ -1,47 +1,55 @@
 <script setup>
-import { ElEmpty, ElTable, ElTableColumn, ElButton, ElInput, ElRadio, ElRadioGroup } from "element-plus";
-import { ref, inject, watch, onMounted } from "vue";
-import RouterBody from "../../../public/RouterBody.js";
-import ServiceBody from "../../../public/ServiceBody.js";
-import UpstreamBody from "../../../public/UpstreamBody.js";
-import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
-// 新元素输入
-let newItem = ref('');
-let apiType = inject('apiType');
-let bodyRequest = ref([])
-let radio2 = ref(false)
-watch(apiType, (newValue) => {
-    switch (newValue) {
-        case "Router":
-            bodyRequest.value = RouterBody;
-            break;
-        case "Service":
-            bodyRequest.value = ServiceBody;
-            break;
-        case "Upstream":
-            bodyRequest.value = UpstreamBody;
-            break;
-        default:
-            break;
-    }
-})
-onMounted(() => {
-    switch (apiType.value) {
-        case "Router":
-            bodyRequest.value = RouterBody;
-            break;
-        case "Service":
-            bodyRequest.value = ServiceBody;
-            break;
-        case "Upstream":
-            bodyRequest.value = UpstreamBody;
-            break;
-        default:
-            break;
-    }
-    console.log(bodyRequest.value);
+// import { ElEmpty, ElTable, ElTableColumn, ElButton, ElInput, ElRadio, ElRadioGroup } from "element-plus";
+// import { ref, inject, watch, onMounted } from "vue";
+// import RouterBody from "../../../public/RouterBody.js";
+// import ServiceBody from "../../../public/ServiceBody.js";
+// import UpstreamBody from "../../../public/UpstreamBody.js";
+// import SSL from "../../../public/SSL.js";
 
-})
+// import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
+// // 新元素输入
+// let newItem = ref('');
+// let apiType = inject('apiType');
+// let bodyRequest = ref([])
+// let radio2 = ref(false)
+// watch(apiType, (newValue) => {
+//     switch (newValue) {
+//         case "Router":
+//             bodyRequest.value = RouterBody;
+//             break;
+//         case "Service":
+//             bodyRequest.value = ServiceBody;
+//             break;
+//         case "Upstream":
+//             bodyRequest.value = UpstreamBody;
+//             break;
+//         case "SSL":
+//             bodyRequest.value = UpstreamBody;
+//             break;
+//         case "Global_rules":
+//             bodyRequest.value = UpstreamBody;
+//             break;
+//         default:
+//             break;
+//     }
+// })
+// onMounted(() => {
+//     switch (apiType.value) {
+//         case "Router":
+//             bodyRequest.value = RouterBody;
+//             break;
+//         case "Service":
+//             bodyRequest.value = ServiceBody;
+//             break;
+//         case "Upstream":
+//             bodyRequest.value = UpstreamBody;
+//             break;
+//         default:
+//             break;
+//     }
+//     console.log(bodyRequest.value);
+
+// })
 </script>
 
 <template>

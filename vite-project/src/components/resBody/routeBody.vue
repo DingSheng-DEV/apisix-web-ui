@@ -110,6 +110,9 @@ const props = defineProps({
     patch: {
         type: String,
     },
+    dialogVisible: {
+        type: Boolean,
+    },
 });
 
 watch(() => props.patch, (newValue) => {
@@ -210,7 +213,6 @@ const submitForm = () => {
     createRouters(k).then((res) => {
         console.log(res);
     });
-
 
 };
 

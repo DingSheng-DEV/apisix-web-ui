@@ -10,9 +10,7 @@ import {
 } from "element-plus";
 import { Search } from "@element-plus/icons-vue";
 import { ref, reactive, inject, watch, onMounted } from "vue";
-import resBody from "@/components/resBody/resBody.vue";
-import routeBody from "@/components/resBody/routeBody.vue";
-import { getRouterById } from "@/api/index.js";
+import SSLBody from "@/components/resBody/sslBody.vue";
 import {
     getSsls,
     getSslsById,
@@ -97,6 +95,14 @@ let handlePatch = (event) => {
     patch.value = event.row.id;
     dialogVisible.value = true;
 };
+let txt = () => {
+    let k = {
+        "cert": ` $(cat t/ certs / apisix.crt)`,
+    }
+    getSsls().then((res) => {
+        console.log(res);
+    })
+}
 
 onMounted(() => {
     loadList();
@@ -124,6 +130,8 @@ const onSubmit = () => {
                         </template>
                     </el-input>
                     <el-button type="primary" @click="onBeforeSubmit(index)">创建资源</el-button>
+                    <el-button type="primary" @click="txt(index)">ettx</el-button>
+
                 </div>
             </el-card>
             <el-card style="
@@ -131,7 +139,7 @@ const onSubmit = () => {
           max-height: calc(-240px + 100vh);
           overflow: auto;
         ">
-                <el-empty description="数据暂无" v-if="empty" />
+                <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
                     <el-table-column prop="uri" label="uri" />
                     <el-table-column prop="id" label="id" />
@@ -149,7 +157,7 @@ const onSubmit = () => {
         </div>
 
         <el-dialog v-model="dialogVisible" title="Parms">
-            <routeBody :patch></routeBody>
+            <SSLBody></SSLBody>
         </el-dialog>
     </div>
 </template>

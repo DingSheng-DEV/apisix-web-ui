@@ -5,7 +5,7 @@ import { ref, reactive, inject, watch, onMounted } from "vue";
 import resBody from "@/components/resBody/resBody.vue";
 import routeBody from "@/components/resBody/routeBody.vue";
 import { getRouterById } from "@/api/index.js";
-import { getRouters, getGlobal_rulesById, createGlobal_rules, PatchGlobal_rules, DeleteGlobal_rules } from "@/api/module/rules.js";
+import { getGlobal_rules, getGlobal_rulesById, createGlobal_rules, PatchGlobal_rules, DeleteGlobal_rules } from "@/api/module/rules.js";
 let tableList = ref([])
 let apiType = inject('apiType');
 let empty = ref(false);
@@ -21,7 +21,6 @@ let searchId = ref('')
 let search = (id) => {
     tableList.value = [];
     getRouterById(id).then((res) => {
-        console.log(res.data);
         let { uri, id, methods, hosts, remote_addrs } = res.data.value;
         tableList.value.push({ uri, id, methods, hosts, remote_addrs })
         if (tableList.value.length !== 0) {
@@ -45,7 +44,7 @@ let reflashList = (index) => {
 
 let loadList = () => {
     tableList.value = [];
-    getRouters().then((res) => {
+    getGlobal_rules().then((res) => {
         for (let item of res.data.list) {
             let { uri, id, methods, hosts, remote_addrs } = item.value;
             tableList.value.push({ uri, id, methods, hosts, remote_addrs })
@@ -104,7 +103,7 @@ const onSubmit = () => {
           </el-form> -->
             </el-card>
             <el-card style="margin-top: 10px;overflow: auto;">
-                <el-empty description="数据暂无" v-if="empty" />
+                <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
                     <el-table-column prop="uri" label="uri" />
                     <el-table-column prop="id" label="id" />
@@ -122,7 +121,7 @@ const onSubmit = () => {
         </div>
 
         <el-dialog v-model="dialogVisible" title="Parms">
-            <routeBody :patch></routeBody>
+
         </el-dialog>
     </div>
 </template>

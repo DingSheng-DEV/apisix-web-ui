@@ -1,6 +1,6 @@
 <template>
     <div class="route-form-container">
-        <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+        <el-form :model="formData" label-width="120px" ref="formRef">
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
@@ -9,19 +9,19 @@
 
                 <el-row :gutter="20">
                     <el-col :span="12">
-                        <el-form-item label="路由名称" prop="name">
-                            <el-input v-model="formData.name" placeholder="请输入路由名称" />
+                        <el-form-item label="服务名称" prop="name">
+                            <el-input v-model="formData.name" placeholder="请输入服务名称" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="路由描述" prop="desc">
-                            <el-input v-model="formData.desc" placeholder="请输入路由描述" />
+                        <el-form-item label="服务描述" prop="desc">
+                            <el-input v-model="formData.desc" placeholder="请输入服务描述" />
                         </el-form-item>
                     </el-col>
                 </el-row>
 
-                <el-form-item label="上游服务ID" prop="upstream_id">
-                    <el-input v-model="formData.upstream_id" placeholder="请输入上游服务ID" />
+                <el-form-item label="服务ID" prop="upstream_id">
+                    <el-input v-model="formData.id" placeholder="请输入服务ID" />
                 </el-form-item>
 
                 <el-form-item label="启用WebSocket" prop="enable_websocket">
@@ -36,16 +36,6 @@
                 </template>
 
                 <array-input v-model="formData.hosts" label="Host列表" placeholder="例如: example.com" />
-            </el-card>
-
-            <!-- 标签配置 -->
-            <el-card class="form-section">
-                <template #header>
-                    <span class="section-title">标签配置</span>
-                </template>
-
-                <key-value-input v-model="formData.labels" key-placeholder="标签键 (如: version)"
-                    value-placeholder="标签值 (如: v2)" />
             </el-card>
 
             <!-- 插件配置 -->
@@ -65,7 +55,61 @@
                     <span class="section-title">上游服务配置</span>
                 </template>
 
-                <key-value-input v-model="formData.upstream" key-placeholder="配置项" value-placeholder="配置值" />
+                <el-form-item label="负载均衡类型" prop="upstream.type">
+                    <el-select v-model="formData.upstream.type" placeholder="请选择负载均衡类型">
+                        <el-option label="轮询(Round Robin)" value="roundrobin" />
+                        <el-option label="一致性哈希(CHash)" value="chash" />
+                        <el-option label="最少连接(Least Conn)" value="least_conn" />
+                    </el-select>
+                </el-form-item>
+
+                <el-form-item label="协议类型" prop="upstream.scheme">
+                    <el-select v-model="formData.upstream.scheme" placeholder="请选择协议类型">
+                        <el-option label="HTTP" value="http" />
+                        <el-option label="HTTPS" value="https" />
+                        <el-option label="gRPC" value="grpc" />
+                        <el-option label="gRPCs" value="grpcs" />
+                    </el-select>
+                </el-form-item>
+
+                <el-form-item label="传递主机" prop="upstream.pass_host">
+                    <el-select v-model="formData.upstream.pass_host" placeholder="请选择主机传递方式">
+                        <el-option label="传递客户端请求的主机(pass)" value="pass" />
+                        <el-option label="使用上游主机(node)" value="node" />
+                        <el-option label="使用指定主机(rewrite)" value="rewrite" />
+                    </el-select>
+                </el-form-item>
+
+                <el-form-item v-if="formData.upstream.pass_host === 'rewrite'" label="指定主机"
+                    prop="upstream.upstream_host">
+                    <el-input v-model="formData.upstream.upstream_host" placeholder="请输入指定的主机名" />
+                </el-form-item>
+
+                <el-form-item label="哈希类型" prop="upstream.hash_on" v-if="formData.upstream.type === 'chash'">
+                    <el-select v-model="formData.upstream.hash_on" placeholder="请选择哈希类型">
+                        <el-option label="变量(vars)" value="vars" />
+                        <el-option label="头部(header)" value="header" />
+                        <el-option label="Cookie" value="cookie" />
+                        <el-option label="消费者(consumer)" value="consumer" />
+                        <el-option label="IP(ip)" value="ip" />
+                    </el-select>
+                </el-form-item>
+
+                <el-form-item label="哈希键" prop="upstream.key"
+                    v-if="formData.upstream.type === 'chash' && formData.upstream.hash_on">
+                    <el-input v-model="formData.upstream.key"
+                        :placeholder="getKeyPlaceholder(formData.upstream.hash_on)" />
+                </el-form-item>
+
+                <el-divider content-position="left">节点配置</el-divider>
+
+                <el-form-item label="节点列表" prop="upstream.nodes">
+                    <key-value-input @send-data="updateNodes" v-model="formData.upstream.nodes"
+                        key-placeholder="节点地址 (如: 127.0.0.1:1980)" value-placeholder="权重 (如: 1)" />
+                </el-form-item>
+
+                <el-alert title="节点格式为 IP:端口，权重为正整数，权重越高分配的请求越多" type="info" :closable="false"
+                    style="margin-top: 10px;" />
             </el-card>
 
             <!-- 表单操作 -->
@@ -78,7 +122,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, defineProps, watch } from 'vue';
 import {
     ElButton,
     ElCard,
@@ -89,21 +133,30 @@ import {
     ElMessage,
     ElAlert,
     ElRow,
-    ElCol
+    ElCol,
+    ElSelect,
+    ElOption,
+    ElDivider
 } from 'element-plus';
+import { getServicesId, PatchServices, DeleteServicesID, createServices } from "@/api/index.js"
+import { getNonEmptyValues } from "@/utils/index.js";
 
 // 导入自定义组件
 import ArrayInput from '@/components/ArrayInput.vue';
 import KeyValueInput from '@/components/KeyValueInput.vue';
-
-// 表单引用
-const formRef = ref();
-
 // 初始表单数据
-const initialFormData = {
+let initialFormData = {
     plugins: {},
-    upstream_id: "1",
-    upstream: {},
+    id: "",
+    upstream: {
+        type: "roundrobin",
+        nodes: {},
+        scheme: "http",
+        pass_host: "pass",
+        hash_on: "",
+        key: "",
+        upstream_host: ""
+    },
     name: "",
     desc: "",
     enable_websocket: false,
@@ -112,39 +165,82 @@ const initialFormData = {
 };
 
 // 表单数据
-const formData = reactive(JSON.parse(JSON.stringify(initialFormData)));
+let formData = reactive(JSON.parse(JSON.stringify(initialFormData)));
 
-// 表单验证规则
-const rules = {
-    name: [
-        { required: true, message: '请输入路由名称', trigger: 'blur' },
-        { min: 2, max: 50, message: '长度在2到50个字符之间', trigger: 'blur' }
-    ],
-    upstream_id: [
-        { required: true, message: '请输入上游服务ID', trigger: 'blur' }
-    ]
+// 表单引用
+const formRef = ref();
+
+// 更新节点配置
+const updateNodes = (data) => {
+    formData.upstream.nodes = {};
+    for (let item of data) {
+        if (item.key && item.value) {
+            formData.upstream.nodes[item.key] = Number(item.value);
+        }
+    }
 };
 
-// 提交表单
-const submitForm = async () => {
-    try {
-        await formRef.value.validate();
-
-        // 验证插件配置是否为有效JSON
-        try {
-            Object.values(formData.plugins).forEach(value => {
-                if (value) JSON.parse(value);
-            });
-        } catch (e) {
-            throw new Error('插件配置必须为有效的JSON格式');
-        }
-
-        console.log('提交数据:', JSON.parse(JSON.stringify(formData)));
-        ElMessage.success('提交成功');
-        // 这里可以添加实际的提交逻辑
-    } catch (error) {
-        ElMessage.error(error.message || '请检查表单填写是否正确');
+// 根据哈希类型获取占位符文本
+const getKeyPlaceholder = (hashOn) => {
+    switch (hashOn) {
+        case 'vars':
+            return '请输入变量名，例如：uri, server_name';
+        case 'header':
+            return '请输入HTTP头名称，例如：User-Agent';
+        case 'cookie':
+            return '请输入Cookie名称';
+        case 'consumer':
+            return '留空，将使用消费者ID';
+        case 'ip':
+            return '留空，将使用客户端IP';
+        default:
+            return '请输入哈希键';
     }
+};
+
+const props = defineProps({
+    patch: {
+        type: String,
+        default: "",
+    },
+    total: {
+        type: Number,
+    },
+});
+
+watch(() => props.patch, (newValue) => {
+    console.log(newValue);
+    if (newValue === "") {
+        // 正确方法：逐个属性重置
+        Object.assign(formData, JSON.parse(JSON.stringify(initialFormData)))
+
+        return;
+    }
+    getServicesId(newValue).then((res) => {
+        for (const key of Object.keys(res.data.value)) {
+            if (formData[key] !== undefined) {
+                console.log(key);
+                formData[key] = res.data.value[key]
+            }
+        }
+    })
+}, { immediate: true });
+
+
+// 提交表单
+const submitForm = () => {
+    let k = getNonEmptyValues(formData)
+    if (props.patch !== "") {
+        console.log(k);
+        PatchServices(k, props.patch).then((res) => {
+            console.log(res);
+        });
+        return
+    }
+    createServices(k, props.total).then((res) => {
+        console.log(res);
+    });
+
 };
 
 // 重置表单
