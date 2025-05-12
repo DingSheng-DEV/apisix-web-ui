@@ -1,6 +1,6 @@
 <template>
     <div class="route-form-container">
-        <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+        <el-form :model="formData" label-width="120px" ref="formRef">
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
@@ -9,19 +9,19 @@
 
                 <el-row :gutter="20">
                     <el-col :span="12">
-                        <el-form-item label="路由名称" prop="name">
-                            <el-input v-model="formData.name" placeholder="请输入路由名称" />
+                        <el-form-item label="服务名称" prop="name">
+                            <el-input v-model="formData.name" placeholder="请输入服务名称" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="路由描述" prop="desc">
-                            <el-input v-model="formData.desc" placeholder="请输入路由描述" />
+                        <el-form-item label="服务描述" prop="desc">
+                            <el-input v-model="formData.desc" placeholder="请输入服务描述" />
                         </el-form-item>
                     </el-col>
                 </el-row>
 
-                <el-form-item label="上游服务ID" prop="upstream_id">
-                    <el-input v-model="formData.upstream_id" placeholder="请输入上游服务ID" />
+                <el-form-item label="服务ID" prop="upstream_id">
+                    <el-input v-model="formData.id" placeholder="请输入服务ID" />
                 </el-form-item>
 
                 <el-form-item label="启用WebSocket" prop="enable_websocket">
@@ -35,7 +35,7 @@
                     <span class="section-title">Host配置</span>
                 </template>
 
-                <array-input v-model="formData.hosts" label="Host列表" placeholder="例如: example.com" />
+                <array-input v-model="formData.hosts" label="hosts" placeholder="例如: example.com" />
             </el-card>
 
             <!-- 标签配置 -->
@@ -44,8 +44,10 @@
                     <span class="section-title">标签配置</span>
                 </template>
 
-                <key-value-input v-model="formData.labels" key-placeholder="标签键 (如: version)"
-                    value-placeholder="标签值 (如: v2)" />
+                <el-form-item label="labels" prop="labels">
+                    <key-value-input @send-data="updateLabels" v-model="formData.labels" key-placeholder="Key"
+                        value-placeholder="Value" />
+                </el-form-item>
             </el-card>
 
             <!-- 插件配置 -->
@@ -54,9 +56,28 @@
                     <span class="section-title">插件配置</span>
                 </template>
 
-                <key-value-input v-model="formData.plugins" key-placeholder="插件名称" value-placeholder="插件配置(JSON)" />
+                <el-form-item label="plugins" prop="plugins">
+                    <el-button type="primary" size="small" @click="addPlugin">添加插件</el-button>
+                    <div v-for="(plugin, index) in pluginsList" :key="index" class="plugin-item">
+                        <el-row :gutter="10">
+                            <el-col :span="6">
+                                <el-select v-model="plugin.name" placeholder="选择插件" filterable>
+                                    <el-option v-for="item in availablePlugins" :key="item" :label="item"
+                                        :value="item" />
+                                </el-select>
+                            </el-col>
+                            <el-col :span="15">
+                                <el-input v-model="plugin.config" type="textarea" :rows="3"
+                                    placeholder="插件配置 (JSON格式)" />
+                            </el-col>
+                            <el-col :span="3">
+                                <el-button type="danger" size="small" @click="removePlugin(index)">删除</el-button>
+                            </el-col>
+                        </el-row>
+                    </div>
+                </el-form-item>
 
-                <el-alert title="插件配置需要输入有效的JSON格式" type="info" :closable="false" />
+                <el-alert title="插件配置必须是有效的JSON格式" type="info" :closable="false" />
             </el-card>
 
             <!-- 上游服务配置 -->
@@ -65,9 +86,83 @@
                     <span class="section-title">上游服务配置</span>
                 </template>
 
-                <key-value-input v-model="formData.upstream" key-placeholder="配置项" value-placeholder="配置值" />
-            </el-card>
+                <!-- 上游配置类型选择 -->
+                <el-form-item label="上游配置类型">
+                    <el-radio-group v-model="upstreamType" @change="handleUpstreamTypeChange">
+                        <el-radio label="id">使用上游ID</el-radio>
+                        <el-radio label="inline">内联配置</el-radio>
+                    </el-radio-group>
+                </el-form-item>
 
+                <!-- 上游ID配置 -->
+                <el-form-item v-if="upstreamType === 'id'" label="upstream_id" prop="upstream_id">
+                    <el-select v-model="formData.upstream_id" filterable placeholder="选择上游ID">
+                        <el-option v-for="item in upstreamList" :key="item.id"
+                            :label="item.id + (item.name ? ' (' + item.name + ')' : '')" :value="item.id">
+                        </el-option>
+                    </el-select>
+                    <span class="form-item-tip">从现有上游中选择</span>
+                </el-form-item>
+
+                <!-- 内联上游配置 -->
+                <template v-if="upstreamType === 'inline'">
+                    <el-form-item label="type" prop="upstream.type">
+                        <el-select v-model="formData.upstream.type" placeholder="选择负载均衡算法">
+                            <el-option label="roundrobin" value="roundrobin" />
+                            <el-option label="chash" value="chash" />
+                            <el-option label="least_conn" value="least_conn" />
+                        </el-select>
+                    </el-form-item>
+
+                    <el-form-item label="scheme" prop="upstream.scheme">
+                        <el-select v-model="formData.upstream.scheme" placeholder="选择协议">
+                            <el-option label="http" value="http" />
+                            <el-option label="https" value="https" />
+                            <el-option label="grpc" value="grpc" />
+                            <el-option label="grpcs" value="grpcs" />
+                        </el-select>
+                    </el-form-item>
+
+                    <el-form-item label="pass_host" prop="upstream.pass_host">
+                        <el-select v-model="formData.upstream.pass_host" placeholder="选择主机传递方式">
+                            <el-option label="pass" value="pass" />
+                            <el-option label="node" value="node" />
+                            <el-option label="rewrite" value="rewrite" />
+                        </el-select>
+                    </el-form-item>
+
+                    <el-form-item v-if="formData.upstream.pass_host === 'rewrite'" label="upstream_host"
+                        prop="upstream.upstream_host">
+                        <el-input v-model="formData.upstream.upstream_host" placeholder="请输入主机名" />
+                    </el-form-item>
+
+                    <el-form-item label="hash_on" prop="upstream.hash_on" v-if="formData.upstream.type === 'chash'">
+                        <el-select v-model="formData.upstream.hash_on" placeholder="选择哈希类型">
+                            <el-option label="vars" value="vars" />
+                            <el-option label="header" value="header" />
+                            <el-option label="cookie" value="cookie" />
+                            <el-option label="consumer" value="consumer" />
+                            <el-option label="ip" value="ip" />
+                        </el-select>
+                    </el-form-item>
+
+                    <el-form-item label="key" prop="upstream.key"
+                        v-if="formData.upstream.type === 'chash' && formData.upstream.hash_on">
+                        <el-input v-model="formData.upstream.key"
+                            :placeholder="getKeyPlaceholder(formData.upstream.hash_on)" />
+                    </el-form-item>
+
+                    <el-divider content-position="left">节点配置</el-divider>
+
+                    <el-form-item label="nodes" prop="upstream.nodes">
+                        <key-value-input @send-data="updateNodes" v-model="formData.upstream.nodes"
+                            key-placeholder="节点地址 (例如: 127.0.0.1:1980)" value-placeholder="权重 (例如: 1)" />
+                    </el-form-item>
+
+                    <el-alert title="节点格式为 IP:端口，权重为正整数，权重越高分配的请求越多" type="info" :closable="false"
+                        style="margin-top: 10px;" />
+                </template>
+            </el-card>
             <!-- 表单操作 -->
             <div class="form-actions">
                 <el-button type="primary" @click="submitForm">提交</el-button>
@@ -78,34 +173,49 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, defineProps, watch, onMounted } from 'vue';
 import {
     ElButton,
     ElCard,
     ElInput,
+    ElInputNumber,
     ElForm,
     ElFormItem,
     ElSwitch,
     ElMessage,
     ElAlert,
     ElRow,
-    ElCol
+    ElCol,
+    ElRadioGroup,
+    ElRadio,
+    ElSelect,
+    ElOption,
+    ElDivider
 } from 'element-plus';
-
+import { getServicesId, PatchServices, createServices, getUpstreams } from "@/api/index.js"
+import { getNonEmptyValues } from "@/utils/index.js";
 // 导入自定义组件
 import ArrayInput from '@/components/ArrayInput.vue';
 import KeyValueInput from '@/components/KeyValueInput.vue';
 
-// 表单引用
-const formRef = ref();
-
 // 初始表单数据
 const initialFormData = {
     plugins: {},
-    upstream_id: "1",
-    upstream: {},
-    name: "",
-    desc: "",
+    id: "",
+    upstream_id: "",
+    upstream: {
+        type: "roundrobin",
+        nodes: {
+            " 127.0.0.1": 1
+        },
+        scheme: "http",
+        pass_host: "pass",
+        hash_on: "",
+        key: "",
+        upstream_host: ""
+    },
+    name: "name",
+    desc: "desc",
     enable_websocket: false,
     hosts: [],
     labels: {}
@@ -114,42 +224,226 @@ const initialFormData = {
 // 表单数据
 const formData = reactive(JSON.parse(JSON.stringify(initialFormData)));
 
-// 表单验证规则
-const rules = {
-    name: [
-        { required: true, message: '请输入路由名称', trigger: 'blur' },
-        { min: 2, max: 50, message: '长度在2到50个字符之间', trigger: 'blur' }
-    ],
-    upstream_id: [
-        { required: true, message: '请输入上游服务ID', trigger: 'blur' }
-    ]
+// 表单引用
+const formRef = ref();
+
+// 上游配置类型
+const upstreamType = ref("inline");
+
+// 上游列表
+const upstreamList = ref([]);
+
+// 插件列表
+const pluginsList = ref([]);
+const availablePlugins = ref([
+    "limit-count",
+    "limit-req",
+    "jwt-auth",
+    "key-auth",
+    "basic-auth",
+    "ip-restriction",
+    "cors",
+
+]);
+
+// 处理上游类型变更
+const handleUpstreamTypeChange = (value) => {
+    if (value === "id") {
+        // 保留upstream配置，但不提交
+    } else {
+        formData.upstream_id = "";
+    }
 };
 
-// 提交表单
-const submitForm = async () => {
-    try {
-        await formRef.value.validate();
+// 添加插件
+const addPlugin = () => {
+    pluginsList.value.push({
+        name: "",
+        config: "{}"
+    });
+};
 
-        // 验证插件配置是否为有效JSON
-        try {
-            Object.values(formData.plugins).forEach(value => {
-                if (value) JSON.parse(value);
-            });
-        } catch (e) {
-            throw new Error('插件配置必须为有效的JSON格式');
+// 移除插件
+const removePlugin = (index) => {
+    pluginsList.value.splice(index, 1);
+};
+
+// 更新标签
+const updateLabels = (data) => {
+    formData.labels = {};
+    for (const item of data) {
+        if (item.key && item.value) {
+            formData.labels[item.key] = item.value;
+        }
+    }
+};
+
+// 更新节点配置
+const updateNodes = (data) => {
+    formData.upstream.nodes = {};
+    for (const item of data) {
+        if (item.key && item.value) {
+            formData.upstream.nodes[item.key] = Number(item.value);
+        }
+    }
+};
+
+// 处理插件配置
+const processPlugins = () => {
+    formData.plugins = {};
+    for (const plugin of pluginsList.value) {
+        if (plugin.name && plugin.config) {
+            try {
+                formData.plugins[plugin.name] = JSON.parse(plugin.config);
+            } catch (e) {
+                ElMessage.error(`Plugin ${plugin.name} configuration is not valid JSON format`);
+                return false;
+            }
+        }
+    }
+    return true;
+};
+
+// 根据哈希类型获取占位符文本
+const getKeyPlaceholder = (hashOn) => {
+    switch (hashOn) {
+        case 'vars':
+            return '请输入变量名，例如：uri, server_name';
+        case 'header':
+            return '请输入HTTP头名称，例如：User-Agent';
+        case 'cookie':
+            return '请输入Cookie名称';
+        case 'consumer':
+            return '留空，将使用消费者ID';
+        case 'ip':
+            return '留空，将使用客户端IP';
+        default:
+            return '请输入哈希键';
+    }
+};
+
+const props = defineProps({
+    patch: {
+        type: String,
+        default: "",
+    },
+    total: {
+        type: Number,
+    },
+});
+
+// 获取上游列表
+const fetchUpstreams = () => {
+    getUpstreams().then(res => {
+        if (res.data && res.data.list) {
+            upstreamList.value = res.data.list.map(item => ({
+                id: item.value.id || item.id,
+                name: item.value.name || ''
+            }));
+        }
+    }).catch(err => {
+        ElMessage.error('Failed to fetch upstream list: ' + err.message);
+    });
+};
+
+// 组件挂载时获取上游列表
+onMounted(() => {
+    fetchUpstreams();
+});
+
+watch(() => props.patch, (newValue) => {
+    // 重置表单数据
+    if (newValue === "") {
+        Object.assign(formData, JSON.parse(JSON.stringify(initialFormData)));
+        pluginsList.value = [];
+        upstreamType.value = "inline";
+        return;
+    }
+
+    // 获取服务详情
+    getServicesId(newValue).then((res) => {
+        console.log(res.data.value);
+        const serviceData = res.data.value;
+
+        // 重置表单
+        Object.assign(formData, JSON.parse(JSON.stringify(initialFormData)));
+
+        // 设置上游类型
+        if (serviceData.upstream_id) {
+            upstreamType.value = "id";
+            formData.upstream_id = serviceData.upstream_id;
+        } else if (serviceData.upstream) {
+            upstreamType.value = "inline";
+            formData.upstream = serviceData.upstream;
         }
 
-        console.log('提交数据:', JSON.parse(JSON.stringify(formData)));
-        ElMessage.success('提交成功');
-        // 这里可以添加实际的提交逻辑
-    } catch (error) {
-        ElMessage.error(error.message || '请检查表单填写是否正确');
-    }
+        // 设置其他字段
+        for (const key of Object.keys(serviceData)) {
+            if (key in formData && !['upstream', 'upstream_id'].includes(key)) {
+                formData[key] = serviceData[key];
+            }
+        }
+
+        // 处理插件
+        pluginsList.value = [];
+        if (serviceData.plugins) {
+            for (const [name, config] of Object.entries(serviceData.plugins)) {
+                pluginsList.value.push({
+                    name,
+                    config: JSON.stringify(config, null, 2)
+                });
+            }
+        }
+    });
+}, { immediate: true });
+
+// 提交表单
+const submitForm = () => {
+    formRef.value.validate((valid) => {
+        if (!valid) {
+            ElMessage.error('请检查表单字段');
+            return;
+        }
+
+        // 处理插件配置
+        if (!processPlugins()) {
+            return;
+        }
+
+        // 根据选择的类型，清除不需要的字段
+        if (upstreamType.value === 'id') {
+            delete formData.upstream;
+        } else {
+            formData.upstream_id = '';
+        }
+
+        // 获取非空值
+        const submitData = getNonEmptyValues(formData);
+        console.log(submitData);
+        if (props.patch !== "") {
+            PatchServices(submitData, props.patch).then((res) => {
+                ElMessage.success('服务更新成功');
+                console.log(res);
+            }).catch(err => {
+                ElMessage.error('服务更新失败: ' + err.message);
+            });
+            return;
+        }
+
+        createServices(submitData).then((res) => {
+            ElMessage.success('服务创建成功');
+            resetForm();
+        }).catch(err => {
+            ElMessage.error('服务创建失败: ' + err.message);
+        });
+    });
 };
 
 // 重置表单
 const resetForm = () => {
     Object.assign(formData, JSON.parse(JSON.stringify(initialFormData)));
+    pluginsList.value = [];
+    upstreamType.value = "inline";
 };
 </script>
 
@@ -172,5 +466,18 @@ const resetForm = () => {
 .form-actions {
     text-align: center;
     margin-top: 20px;
+}
+
+.plugin-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px dashed #dcdfe6;
+    border-radius: 4px;
+}
+
+.form-item-tip {
+    margin-left: 10px;
+    color: #909399;
+    font-size: 12px;
 }
 </style>

@@ -2,27 +2,65 @@
 import { ElEmpty, ElTable, ElTableColumn, ElButton, ElCard, ElInput, ElDialog } from "element-plus";
 import { Search } from '@element-plus/icons-vue'
 import { ref, reactive, inject, watch, onMounted } from "vue";
-import resBody from "@/components/resBody/resBody.vue";
-import routeBody from "@/components/resBody/routeBody.vue";
-import { getRouterById } from "@/api/index.js";
-import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
-let tableList = ref([])
-let apiType = inject('apiType');
-let empty = ref(false);
+import global_rules_Body from "@/components/resBody/limitCountPluginBody.vue";
+
+import { getGlobal_rules, getGlobal_rulesById, createGlobal_rules, PatchGlobal_rules, DeleteGlobal_rules } from "@/api/module/rules.js";
+const tableList = ref([])
+const apiType = inject('apiType');
+const empty = ref(false);
 watch(apiType, (newValue) => {
 });
-let dialogVisible = ref(false)
+const dialogVisible = ref(false)
+const total = ref(0)
+const searchId = ref('')
+const patch = ref("");
 
-let searchId = ref('')
-let search = (id) => {
+const reflashList = (index) => {
+    tableList.value.splice(index, 1);
+    if (tableList.value.length === 0) {
+        empty.value = true
+    }
+}
+
+const loadList = () => {
     tableList.value = [];
-    getRouterById(id).then((res) => {
-        console.log(res.data);
-        let { uri, id, methods, hosts, remote_addrs } = res.data.value;
-        tableList.value.push({ uri, id, methods, hosts, remote_addrs })
-        if (tableList.value.length !== 0) {
-            empty.value = false
+    getGlobal_rules().then((res) => {
+        total.value = res.data.list.length
+        console.log(total.value);
+        for (let item of res.data.list) {
+            let { plugins, id } = item.value;
+            if (Object.keys(plugins).length === 0) {
+                tableList.value.push({ id })
+                continue
+            }
+            let { ["limit-count"]: limit_count } = plugins;
+
+            let { time_window, policy, key, rejected_code } = limit_count;
+
+            tableList.value.push({ policy, id, key, rejected_code, time_window })
         }
+        if (tableList.value.length === 0) {
+            empty.value = true
+        }
+    });
+}
+
+const search = (id) => {
+    if (id === '') {
+        loadList()
+        return
+    }
+    tableList.value = [];
+    getGlobal_rulesById(id).then((res) => {
+        let { plugins, id } = res.data.value;
+        if (Object.keys(plugins).length === 0) {
+            tableList.value.push({ id })
+            return
+        }
+        let { ["limit-count"]: limit_count } = plugins;
+        let { time_window, policy, key, rejected_code } = limit_count;
+
+        tableList.value.push({ policy, id, key, rejected_code, time_window })
     }).catch(() => {
         if (tableList.value.length === 0) {
             empty.value = true
@@ -30,36 +68,21 @@ let search = (id) => {
     })
 
 }
-let patch = ref("");
 
-let reflashList = (index) => {
-    tableList.value.splice(index, 1);
-    if (tableList.value.length === 0) {
-        empty.value = true
-    }
-}
 
-let loadList = () => {
-    tableList.value = [];
-    getRouters().then((res) => {
-        for (let item of res.data.list) {
-            let { uri, id, methods, hosts, remote_addrs } = item.value;
-            tableList.value.push({ uri, id, methods, hosts, remote_addrs })
-        }
-        if (tableList.value.length === 0) {
-            empty.value = true
-        }
-    });
-}
-
-let handleDelete = (event) => {
-    DeleteRouterByID(event.row.id).then((res) => {
+const handleDelete = (event) => {
+    DeleteGlobal_rules(event.row.id).then((res) => {
         console.log(res);
     });
     reflashList(event.$index)
 }
 
-let handlePatch = (event) => {
+const handleClose = () => {
+    loadList()
+    dialogVisible.value = false
+}
+
+const handlePatch = (event) => {
     patch.value = event.row.id
     dialogVisible.value = true
 }
@@ -93,20 +116,15 @@ const onSubmit = () => {
                     </el-input>
                     <el-button type="primary" @click="onBeforeSubmit(index)">创建资源</el-button>
                 </div>
-                <!-- <el-form :inline="true" :model="formInline" class="demo-form-inline">
-            <el-form-item v-for="(item, index) in RouteReflect">
-              <el-button type="primary" @click="onBeforeSubmit(index)"> {{ item.desc }}</el-button>
-            </el-form-item>
-          </el-form> -->
             </el-card>
             <el-card style="margin-top: 10px;overflow: auto;">
-                <el-empty description="数据暂无" v-if="empty" />
+                <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
-                    <el-table-column prop="uri" label="uri" />
                     <el-table-column prop="id" label="id" />
-                    <el-table-column prop="hosts" label="hosts" />
-                    <el-table-column prop="methods" label="methods" />
-                    <el-table-column prop="remote_addrs" label="remote_addrs" />
+                    <el-table-column prop="policy" label="policy" />
+                    <el-table-column prop="key" label="key" />
+                    <el-table-column prop="rejected_code" label="rejected_code" />
+                    <el-table-column prop="time_window" label="time_window" />
                     <el-table-column label="Operations">
                         <template #default="scope">
                             <el-button link type="primary" size="small" @click="handleDelete(scope)">Delete</el-button>
@@ -117,8 +135,8 @@ const onSubmit = () => {
             </el-card>
         </div>
 
-        <el-dialog v-model="dialogVisible" title="Parms">
-            <routeBody :patch></routeBody>
+        <el-dialog v-model="dialogVisible" title="Parms" @close="handleClose">
+            <global_rules_Body :total="total" :patch="patch"></global_rules_Body>
         </el-dialog>
     </div>
 </template>

@@ -55,3 +55,19 @@ export function getNonEmptyValues(data) {
   const filtered = filterEmptyValues(data);
   return filtered || {};
 }
+//00000000000000001407写一个函数处理这种字符串去掉前面的0将剩下的数字+1后返回字符串
+export function processString(str) {
+  // 去掉前面的零
+  let result = str.replace(/^0+/, "");
+
+  // 如果去掉零后为空字符串，说明原字符串全是零，返回 '1'
+  if (result === "") {
+    return "1";
+  }
+
+  // 将剩下的数字加 1
+  result = BigInt(result) + BigInt(1);
+
+  // 返回结果字符串
+  return result.toString();
+}

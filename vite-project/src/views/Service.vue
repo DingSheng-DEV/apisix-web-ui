@@ -2,50 +2,29 @@
 import { ElEmpty, ElTable, ElTableColumn, ElButton, ElCard, ElInput, ElDialog } from "element-plus";
 import result from '@/components/main/result.vue';
 import { ref, reactive, provide, inject, watch, onMounted } from "vue";
-import resBody from "@/components/resBody/resBody.vue";
 import ServiceBody from "@/components/resBody/serviceBody.vue";
 import { getServices, DeleteServicesID, getServicesId, createServices } from "@/api/index.js";
 import { Search } from '@element-plus/icons-vue'
-let tableList = ref([])
-let apiType = inject('apiType');
-let empty = ref(false);
+const tableList = ref([])
+const apiType = inject('apiType');
+const empty = ref(false);
 watch(apiType, (newValue) => {
 });
-let dialogVisible = ref(false)
+const dialogVisible = ref(false)
 
-
-// for (let i = 0; i < 60; i++) {
-//     let c = {
-//         "plugins": {
-//             "limit-count": {
-//                 "count": 2,
-//                 "time_window": 60,
-//                 "rejected_code": 503,
-//                 "key": "remote_addr"
-//             }
-//         },
-//         "enable_websocket": true,
-//         "upstream": {
-//             "type": "roundrobin",
-//             "nodes": {
-//                 "127.0.0.1:1980": 1
-//             }
-//         }
-//     }
-
-//     createServices(c, i).then((res) => {
-//         console.log(res);
-//     });
-// }
-
-let searchId = ref('')
-let search = (id) => {
+const searchId = ref('')
+const search = (id) => {
     tableList.value = [];
+    if (id === '') {
+        loadList()
+        return
+    }
     getServicesId(id).then((res) => {
-        console.log(res.data);
-        let { enable_websocket, id, upstream } = res.data.value;
+        let { enable_websocket, id, upstream, name } = res.data.value;
+        if (name === undefined) { name = 'undef' }
+
         let { hash_on, type, scheme } = upstream
-        tableList.value.push({ enable_websocket, id, hash_on, type, scheme })
+        tableList.value.push({ enable_websocket, id, hash_on, type, scheme, name })
         if (tableList.value.length !== 0) {
             empty.value = false
         }
@@ -56,46 +35,76 @@ let search = (id) => {
     })
 
 }
-let patch = ref("");
-
-let reflashList = (index) => {
+const patch = ref("");
+const total = ref(0);
+const reflashList = (index) => {
     tableList.value.splice(index, 1);
     if (tableList.value.length === 0) {
         empty.value = true
     }
 }
 
-let loadList = () => {
+const loadList = () => {
     tableList.value = [];
     getServices().then((res) => {
-        console.log(res.data.list);
+        total.value = res.data.list.length + 1;
+        for (const item of res.data.list) {
+            let { enable_websocket, id, upstream, name } = item.value;
+            if (name === undefined) { name = 'undef' }
 
-        for (let item of res.data.list) {
-            let { enable_websocket, id, upstream } = item.value;
-            let { hash_on, type, scheme } = upstream
-            tableList.value.push({ enable_websocket, id, hash_on, type, scheme })
+            if (!upstream) {
+                tableList.value.push({ enable_websocket, id, name })
+            }
+            if (upstream) {
+                let { hash_on, type, scheme } = upstream
+                // 如果 hash_on 是 undefined，设置为默认值
+                if (hash_on === undefined) {
+                    hash_on = 'defaultHash';
+                }
+
+                // 如果 hash_on 是 undefined，设置为默认值
+                if (type === undefined) {
+                    type = 'defaultHash';
+                }
+
+                // 如果 hash_on 是 undefined，设置为默认值
+                if (scheme === undefined) {
+                    scheme = 'defaultHash';
+                }
+
+                tableList.value.push({ enable_websocket, id, hash_on, type, scheme, name })
+            }
         }
         if (tableList.value.length === 0) {
             empty.value = true
         }
+        // 根据 id 排序
+        tableList.value.sort((a, b) => {
+            if (Number(a.id) < Number(b.id)) return -1; // 如果 a.id 小于 b.id，返回 -1
+            if (Number(a.id) > Number(b.id)) return 1;  // 如果 a.id 大于 b.id，返回 1
+            return 0;                   // 如果 a.id 等于 b.id，返回 0
+        });
     });
 }
 
-let handleDelete = (event) => {
+const handleDelete = (event) => {
     DeleteServicesID(event.row.id).then((res) => {
         console.log(res);
     });
     reflashList(event.$index)
 }
+const handleClose = () => {
+    loadList()
+    dialogVisible.value = false
+}
 
-let handlePatch = (event) => {
+const handlePatch = (event) => {
     patch.value = event.row.id
     dialogVisible.value = true
 }
 
 onMounted(() => {
     loadList()
-
 })
 
 
@@ -124,9 +133,10 @@ const onSubmit = () => {
                 </div>
             </el-card>
             <el-card style="margin-top: 10px;max-height: calc(-240px + 100vh);overflow: auto;">
-                <el-empty description="数据暂无" v-if="empty" />
+                <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
                     <el-table-column prop="id" label="id" />
+                    <el-table-column prop="name" label="name" />
                     <el-table-column prop="enable_websocket" label="enable_websocket" />
                     <el-table-column prop="scheme" label="scheme" />
                     <el-table-column prop="hash_on" label="hash_on" />
@@ -142,28 +152,7 @@ const onSubmit = () => {
         </div>
 
         <el-dialog v-model="dialogVisible" title="Parms" :before-close="handleClose">
-            <ServiceBody></ServiceBody>
-            <!-- <div v-for="(value, key) in formData"
-                style="display: flex;gap: 6px;margin: 5px 0px;align-items: center;">
-                <span style="width: 12%;text-align: center;">{{ key }}</span>
-                <el-input style="width: 75%;" :value="value">{{ key }}</el-input>
-    </div>
-    <div>
-        <span>body:</span>
-    </div>
-    <div v-for="(value, key) in formBody"
-        style="display: flex;gap: 6px;margin: 5px 0px;align-items: center;justify-content: space-between;padding: 0 20px;">
-        <span style="text-align: center;">{{ key }}:{{ value }}</span>
-        <el-input style="width: 25%;"></el-input>
-    </div> -->
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="dialogVisible = false">取消</el-button>
-                    <el-button type="primary" @click="onSubmit">
-                        发送
-                    </el-button>
-                </span>
-            </template>
+            <ServiceBody :patch="patch" :total="total"></ServiceBody>
         </el-dialog>
     </div>
 </template>

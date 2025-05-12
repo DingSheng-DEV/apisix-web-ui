@@ -1,3 +1,5 @@
+import Http from "@/utils/request.js";
+
 /**
  * 获取全局规则列表
  * @returns {Promise<ApiResponse<Array<GlobalRule>>>} 包含全局规则列表的Promise
@@ -24,8 +26,8 @@ export function getGlobal_rulesById(id) {
  * @param {Object} [parms.metadata] - 元数据信息
  * @returns {Promise<ApiResponse<any>>} 包含创建结果的Promise
  */
-export function createGlobal_rules(parms) {
-  return Http.put(`/apisix/admin/global_rules`, parms);
+export function createGlobal_rules(parms, id) {
+  return Http.put(`/apisix/admin/global_rules/${id}`, parms);
 }
 
 /**

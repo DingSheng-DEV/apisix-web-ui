@@ -2,24 +2,27 @@
 import { ElEmpty, ElTable, ElTableColumn, ElButton, ElCard, ElInput, ElDialog } from "element-plus";
 import { Search } from '@element-plus/icons-vue'
 import { ref, reactive, inject, watch, onMounted } from "vue";
-import resBody from "@/components/resBody/resBody.vue";
 import routeBody from "@/components/resBody/routeBody.vue";
 import { getRouterById } from "@/api/index.js";
 import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
-let tableList = ref([])
-let apiType = inject('apiType');
-let empty = ref(false);
+const tableList = ref([])
+const apiType = inject('apiType');
+const empty = ref(false);
 watch(apiType, (newValue) => {
 });
-let dialogVisible = ref(false)
+const dialogVisible = ref(false)
 
-let searchId = ref('')
-let search = (id) => {
+const searchId = ref('')
+const search = (id) => {
     tableList.value = [];
+    if (id === '') {
+        loadList()
+        return
+    }
     getRouterById(id).then((res) => {
-        console.log(res.data);
-        let { uri, id, methods, hosts, remote_addrs } = res.data.value;
-        tableList.value.push({ uri, id, methods, hosts, remote_addrs })
+        let { uri, id, methods, hosts, remote_addrs, name } = res.data.value;
+        if (name === undefined) { name = 'undef' }
+        tableList.value.push({ uri, id, methods, hosts, remote_addrs, name })
         if (tableList.value.length !== 0) {
             empty.value = false
         }
@@ -30,36 +33,46 @@ let search = (id) => {
     })
 
 }
-let patch = ref("");
+const patch = ref("");
 
-let reflashList = (index) => {
+const reflashList = (index) => {
     tableList.value.splice(index, 1);
     if (tableList.value.length === 0) {
         empty.value = true
     }
 }
 
-let loadList = () => {
+const loadList = () => {
     tableList.value = [];
     getRouters().then((res) => {
-        for (let item of res.data.list) {
-            let { uri, id, methods, hosts, remote_addrs } = item.value;
-            tableList.value.push({ uri, id, methods, hosts, remote_addrs })
+        for (const item of res.data.list) {
+            let { uri, uris, id, methods, hosts, remote_addrs, name } = item.value;
+            let finalUri = uri;
+            if (name === undefined) { name = 'undef' }
+            if (uris) { finalUri = uris }
+            tableList.value.push({ uri: finalUri, id, methods, hosts, remote_addrs, name })
         }
         if (tableList.value.length === 0) {
             empty.value = true
         }
+
+        // 根据 id 排序10
+        tableList.value.sort((a, b) => {
+            if (Number(a.id) < Number(b.id)) return -1; // 如果 a.id 小于 b.id，返回 -1
+            if (Number(a.id) > Number(b.id)) return 1;  // 如果 a.id 大于 b.id，返回 1
+            return 0;                   // 如果 a.id 等于 b.id，返回 0
+        });
     });
 }
 
-let handleDelete = (event) => {
+const handleDelete = (event) => {
     DeleteRouterByID(event.row.id).then((res) => {
         console.log(res);
     });
     reflashList(event.$index)
 }
 
-let handlePatch = (event) => {
+const handlePatch = (event) => {
     patch.value = event.row.id
     dialogVisible.value = true
 }
@@ -69,6 +82,10 @@ onMounted(() => {
 
 })
 
+const handleClose = () => {
+    loadList()
+    dialogVisible.value = false
+}
 
 const onBeforeSubmit = (index) => {
     patch.value = ""
@@ -93,17 +110,13 @@ const onSubmit = () => {
                     </el-input>
                     <el-button type="primary" @click="onBeforeSubmit(index)">创建资源</el-button>
                 </div>
-                <!-- <el-form :inline="true" :model="formInline" class="demo-form-inline">
-            <el-form-item v-for="(item, index) in RouteReflect">
-              <el-button type="primary" @click="onBeforeSubmit(index)"> {{ item.desc }}</el-button>
-            </el-form-item>
-          </el-form> -->
             </el-card>
             <el-card style="margin-top: 10px;max-height: calc(-240px + 100vh);overflow: auto;">
-                <el-empty description="数据暂无" v-if="empty" />
+                <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
-                    <el-table-column prop="uri" label="uri" />
                     <el-table-column prop="id" label="id" />
+                    <el-table-column prop="name" label="name" />
+                    <el-table-column prop="uri" label="uri" />
                     <el-table-column prop="hosts" label="hosts" />
                     <el-table-column prop="methods" label="methods" />
                     <el-table-column prop="remote_addrs" label="remote_addrs" />
@@ -117,7 +130,7 @@ const onSubmit = () => {
             </el-card>
         </div>
 
-        <el-dialog v-model="dialogVisible" title="Parms">
+        <el-dialog v-model="dialogVisible" title="Parms" :before-close="handleClose">
             <routeBody :patch></routeBody>
         </el-dialog>
     </div>

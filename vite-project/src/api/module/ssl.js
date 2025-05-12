@@ -1,3 +1,5 @@
+import Http from "@/utils/request.js";
+
 /**
  * 获取SSL证书列表
  * @returns {Promise<ApiResponse<Array<SSL>>>} 包含SSL证书列表的Promise

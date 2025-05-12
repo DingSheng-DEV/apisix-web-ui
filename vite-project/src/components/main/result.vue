@@ -38,6 +38,7 @@ let reflashList = (index) => {
 let loadList = () => {
     tableList.value = [];
     getRouters().then((res) => {
+        console.log(res.data.list);
         for (let item of res.data.list) {
             let { uri, id, methods, hosts, remote_addrs } = item.value;
             tableList.value.push({ uri, id, methods, hosts, remote_addrs })
