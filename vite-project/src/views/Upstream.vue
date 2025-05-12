@@ -24,8 +24,10 @@ const loadList = () => {
     getUpstreams().then((res) => {
         total.value = res.data.list.length + 1;
         for (let item of res.data.list) {
-            let { id, hash_on, scheme, type, pass_host } = item.value;
-            tableList.value.push({ pass_host, id, hash_on, type, scheme })
+            let { id, hash_on, scheme, type, pass_host, name } = item.value;
+            if (name === undefined) { name = 'undef' }
+
+            tableList.value.push({ pass_host, id, hash_on, type, scheme, name })
         }
         if (tableList.value.length === 0) {
             empty.value = true
@@ -37,7 +39,6 @@ const loadList = () => {
             return 0;                   // 如果 a.id 等于 b.id，返回 0
         });
     });
-    console.log(tableList.value);
 }
 
 const search = (id) => {
@@ -47,9 +48,10 @@ const search = (id) => {
     }
     tableList.value = [];
     getUpstreamsById(id).then((res) => {
-        console.log(res.data);
-        let { id, hash_on, scheme, type, pass_host } = res.data.value;
-        tableList.value.push({ pass_host, id, hash_on, type, scheme })
+        let { id, hash_on, scheme, type, pass_host, name } = res.data.value;
+        if (name === undefined) { name = 'undef' }
+
+        tableList.value.push({ pass_host, id, hash_on, type, scheme, name })
         if (tableList.value.length !== 0) {
             empty.value = false
         }
@@ -112,6 +114,7 @@ const onSubmit = () => {
                 <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
                     <el-table-column prop="id" label="id" />
+                    <el-table-column prop="name" label="name" />
                     <el-table-column prop="pass_host" label="pass_host" />
                     <el-table-column prop="scheme" label="scheme" />
                     <el-table-column prop="hash_on" label="hash_on" />

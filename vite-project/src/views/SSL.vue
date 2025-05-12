@@ -32,8 +32,10 @@ const search = (id) => {
     }
     getSslsById(id)
         .then((res) => {
-            console.log(res.data.value);
-            const { cert, id, key, snis, type } = res.data.value;
+            let { cert, id, key, snis, type } = res.data.value;
+            console.log(key);
+
+            if (key === undefined) { key = "..." }
             tableList.value.push({ cert, id, key, snis, type });
             if (tableList.value.length !== 0) {
                 empty.value = false;
@@ -59,7 +61,7 @@ const loadList = () => {
     getSsls().then((res) => {
 
         for (const item of res.data.list) {
-            const { cert, id, key, snis, type } = item.value;
+            let { cert, id, key, snis, type } = item.value;
             tableList.value.push({ cert, id, key, snis, type });
         }
         if (tableList.value.length === 0) {
@@ -122,12 +124,12 @@ const onSubmit = () => {
                 <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
                     <el-table-column prop="id" label="id" />
-                    <el-table-column prop="cert" label="cert" width="150">
+                    <el-table-column prop="cert" label="cert" width="350">
                         <template #default="scope">
                             <div class="truncated-text">{{ scope.row.cert }}</div>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="key" label="key" width="150">
+                    <el-table-column prop="key" label="key" width="350">
                         <template #default="scope">
                             <div class="truncated-text">{{ scope.row.key }}</div>
                         </template>

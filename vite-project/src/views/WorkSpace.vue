@@ -20,18 +20,6 @@ let formData = ref({
 
 const onBeforeSubmit = (index) => {
     dialogVisible.value = true
-    // formBody = []
-    // formData = RouteReflect[index]
-    // if (RouteReflect[index].body) {
-    //   let { body, ...parms } = RouteReflect[index]
-    //   formBody = JSON.parse(JSON.stringify(RouteReflect[index].body));
-    //   formData = JSON.parse(JSON.stringify(parms));
-    // }
-    // dialogVisible.value = true
-    // type.value = index
-
-
-
 }
 
 const onSubmit = () => {

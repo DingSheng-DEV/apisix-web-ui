@@ -12,31 +12,6 @@ watch(apiType, (newValue) => {
 });
 const dialogVisible = ref(false)
 
-
-// for (let i = 0; i < 60; i++) {
-//     let c = {
-//         "plugins": {
-//             "limit-count": {
-//                 "count": 2,
-//                 "time_window": 60,
-//                 "rejected_code": 503,
-//                 "key": "remote_addr"
-//             }
-//         },
-//         "enable_websocket": true,
-//         "upstream": {
-//             "type": "roundrobin",
-//             "nodes": {
-//                 "127.0.0.1:1980": 1
-//             }
-//         }
-//     }
-
-//     createServices(c, i).then((res) => {
-//         console.log(res);
-//     });
-// }
-
 const searchId = ref('')
 const search = (id) => {
     tableList.value = [];
@@ -45,9 +20,11 @@ const search = (id) => {
         return
     }
     getServicesId(id).then((res) => {
-        const { enable_websocket, id, upstream } = res.data.value;
-        const { hash_on, type, scheme } = upstream
-        tableList.value.push({ enable_websocket, id, hash_on, type, scheme })
+        let { enable_websocket, id, upstream, name } = res.data.value;
+        if (name === undefined) { name = 'undef' }
+
+        let { hash_on, type, scheme } = upstream
+        tableList.value.push({ enable_websocket, id, hash_on, type, scheme, name })
         if (tableList.value.length !== 0) {
             empty.value = false
         }
@@ -72,10 +49,11 @@ const loadList = () => {
     getServices().then((res) => {
         total.value = res.data.list.length + 1;
         for (const item of res.data.list) {
-            const { enable_websocket, id, upstream } = item.value;
+            let { enable_websocket, id, upstream, name } = item.value;
+            if (name === undefined) { name = 'undef' }
 
             if (!upstream) {
-                tableList.value.push({ enable_websocket, id, })
+                tableList.value.push({ enable_websocket, id, name })
             }
             if (upstream) {
                 let { hash_on, type, scheme } = upstream
@@ -94,7 +72,7 @@ const loadList = () => {
                     scheme = 'defaultHash';
                 }
 
-                tableList.value.push({ enable_websocket, id, hash_on, type, scheme })
+                tableList.value.push({ enable_websocket, id, hash_on, type, scheme, name })
             }
         }
         if (tableList.value.length === 0) {
@@ -158,6 +136,7 @@ const onSubmit = () => {
                 <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
                     <el-table-column prop="id" label="id" />
+                    <el-table-column prop="name" label="name" />
                     <el-table-column prop="enable_websocket" label="enable_websocket" />
                     <el-table-column prop="scheme" label="scheme" />
                     <el-table-column prop="hash_on" label="hash_on" />

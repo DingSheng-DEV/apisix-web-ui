@@ -20,8 +20,9 @@ const search = (id) => {
         return
     }
     getRouterById(id).then((res) => {
-        const { uri, id, methods, hosts, remote_addrs } = res.data.value;
-        tableList.value.push({ uri, id, methods, hosts, remote_addrs })
+        let { uri, id, methods, hosts, remote_addrs, name } = res.data.value;
+        if (name === undefined) { name = 'undef' }
+        tableList.value.push({ uri, id, methods, hosts, remote_addrs, name })
         if (tableList.value.length !== 0) {
             empty.value = false
         }
@@ -45,15 +46,17 @@ const loadList = () => {
     tableList.value = [];
     getRouters().then((res) => {
         for (const item of res.data.list) {
-            const { uri, uris, id, methods, hosts, remote_addrs } = item.value;
+            let { uri, uris, id, methods, hosts, remote_addrs, name } = item.value;
             let finalUri = uri;
+            if (name === undefined) { name = 'undef' }
             if (uris) { finalUri = uris }
-            tableList.value.push({ uri: finalUri, id, methods, hosts, remote_addrs })
+            tableList.value.push({ uri: finalUri, id, methods, hosts, remote_addrs, name })
         }
         if (tableList.value.length === 0) {
             empty.value = true
         }
-        // 根据 id 排序
+
+        // 根据 id 排序10
         tableList.value.sort((a, b) => {
             if (Number(a.id) < Number(b.id)) return -1; // 如果 a.id 小于 b.id，返回 -1
             if (Number(a.id) > Number(b.id)) return 1;  // 如果 a.id 大于 b.id，返回 1
@@ -111,8 +114,9 @@ const onSubmit = () => {
             <el-card style="margin-top: 10px;max-height: calc(-240px + 100vh);overflow: auto;">
                 <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
-                    <el-table-column prop="uri" label="uri" />
                     <el-table-column prop="id" label="id" />
+                    <el-table-column prop="name" label="name" />
+                    <el-table-column prop="uri" label="uri" />
                     <el-table-column prop="hosts" label="hosts" />
                     <el-table-column prop="methods" label="methods" />
                     <el-table-column prop="remote_addrs" label="remote_addrs" />

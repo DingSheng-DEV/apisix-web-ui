@@ -72,8 +72,8 @@ export function getServicesId(id) {
  * @param {Object} [parms.upstream] - 上游配置
  * @returns {Promise<ApiResponse<any>>} 包含创建结果的Promise
  */
-export function createServices(parms, id) {
-  return Http.put(`/apisix/admin/services/${id}`, parms);
+export function createServices(parms) {
+  return Http.post(`/apisix/admin/services`, parms);
 }
 
 /**
@@ -121,8 +121,8 @@ export function getUpstreamsById(id) {
  * @param {Object} [parms.timeout] - 超时设置 {connect: ms, send: ms, read: ms}
  * @returns {Promise<ApiResponse<any>>} 包含创建结果的Promise
  */
-export function createUpstreams(parms, id) {
-  return Http.put(`/apisix/admin/upstreams/${id}`, parms);
+export function createUpstreams(parms) {
+  return Http.post(`/apisix/admin/upstreams`, parms);
 }
 
 /**

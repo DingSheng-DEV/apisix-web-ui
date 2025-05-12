@@ -13,7 +13,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://192.168.3.115:9180", // 目标服务器地址
+        target: "http://192.168.3.125:9180", // 目标服务器地址
         changeOrigin: true, // 允许跨域
         rewrite: (path) => {
           const newPath = path.replace(/^\/api/, "");
