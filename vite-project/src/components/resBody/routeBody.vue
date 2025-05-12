@@ -144,7 +144,7 @@
 
                 <!-- 上游配置类型选择 -->
                 <el-form-item label="上游配置方式">
-                    <el-radio-group v-model="upstreamType" @change="handleUpstreamTypeChange">
+                    <el-radio-group v-model="upstreamType">
                         <el-radio label="id">使用upstream_id</el-radio>
                         <el-radio label="inline">内联upstream</el-radio>
                     </el-radio-group>
@@ -153,8 +153,7 @@
                 <!-- 上游ID配置 -->
                 <el-form-item v-if="upstreamType === 'id'" label="upstream_id" prop="upstream_id">
                     <el-select v-model="formData.upstream_id" filterable placeholder="Select upstream ID">
-                        <el-option v-for="item in upstreamList" :key="item.id"
-                            :label="item.id + (item.name ? ' (' + item.name + ')' : '')" :value="item.id">
+                        <el-option v-for="item in upstreamList" :key="item.id" :label="item.id" :value="item.id">
                         </el-option>
                     </el-select>
                     <span class="form-item-tip">Select from existing upstreams</span>
@@ -188,8 +187,7 @@
                 <!-- 服务ID配置 -->
                 <el-form-item label="service_id" prop="service_id">
                     <el-select v-model="formData.service_id" filterable placeholder="Select service ID">
-                        <el-option v-for="item in serviceList" :key="item.id"
-                            :label="item.id + (item.name ? ' (' + item.name + ')' : '')" :value="item.id">
+                        <el-option v-for="item in serviceList" :key="item.id" :label="item.id" :value="item.id">
                         </el-option>
                     </el-select>
                     <span class="form-item-tip">Select from existing services</span>
@@ -201,18 +199,18 @@
                 <el-form-item label="超时配置">
                     <el-row :gutter="10">
                         <el-col :span="8">
-                            <el-form-item label="连接超时" prop="timeout.connect">
+                            <el-form-item label="连接超时">
                                 <el-input-number v-model="formData.timeout.connect" :min="0" :step="1"
                                     placeholder="秒" />
                             </el-form-item>
                         </el-col>
                         <el-col :span="8">
-                            <el-form-item label="发送超时" prop="timeout.send">
+                            <el-form-item label="发送超时">
                                 <el-input-number v-model="formData.timeout.send" :min="0" :step="1" placeholder="秒" />
                             </el-form-item>
                         </el-col>
                         <el-col :span="8">
-                            <el-form-item label="读取超时" prop="timeout.read">
+                            <el-form-item label="读取超时">
                                 <el-input-number v-model="formData.timeout.read" :min="0" :step="1" placeholder="秒" />
                             </el-form-item>
                         </el-col>
@@ -413,20 +411,6 @@ const handleRemoteAddrTypeChange = (value) => {
     }
 };
 
-// 处理上游类型变更
-const handleUpstreamTypeChange = (value) => {
-    if (value === "id") {
-        formData.service_id = "";
-        // 保留upstream配置，但不提交
-    } else if (value === "service") {
-        formData.upstream_id = "";
-        // 保留upstream配置，但不提交
-    } else {
-        formData.upstream_id = "";
-        formData.service_id = "";
-    }
-};
-
 // 处理插件类型变更
 const handlePluginTypeChange = (value) => {
     if (value === "config_id") {
@@ -556,12 +540,12 @@ watch(() => props.patch, (newValue) => {
     // 重置表单数据
     if (newValue === "") {
         Object.assign(formData, JSON.parse(JSON.stringify(initialFormData)));
-        // pluginsList.value = [];
-        // uriType.value = "multiple";
-        // hostType.value = "multiple";
-        // remoteAddrType.value = "multiple";
-        // upstreamType.value = "inline";
-        // pluginType.value = "inline";
+        pluginsList.value = [];
+        uriType.value = "multiple";
+        hostType.value = "multiple";
+        remoteAddrType.value = "multiple";
+        upstreamType.value = "inline";
+        pluginType.value = "inline";
         return;
     }
 
@@ -601,20 +585,18 @@ watch(() => props.patch, (newValue) => {
         }
 
         // 设置上游类型
+        formData.upstream_id = routeData.upstream_id;
+        formData.service_id = routeData.service_id;
+        formData.upstream = routeData.upstream;
         if (routeData.upstream_id) {
             upstreamType.value = "id";
-            formData.upstream_id = routeData.upstream_id;
-        } else if (routeData.service_id) {
-            upstreamType.value = "service";
-            formData.service_id = routeData.service_id;
         } else if (routeData.upstream) {
             upstreamType.value = "inline";
-            formData.upstream = routeData.upstream;
         }
 
         // 设置其他字段
         for (const key of Object.keys(routeData)) {
-            if (key in formData && !['uri', 'uris', 'host', 'hosts', 'remote_addr', 'remote_addrs', 'upstream', 'upstream_id', 'service_id'].includes(key)) {
+            if (key in formData && !['uri', 'uris', 'host', 'hosts', 'remote_addr', 'remote_addrs'].includes(key)) {
                 formData[key] = routeData[key];
             }
         }
@@ -635,6 +617,8 @@ watch(() => props.patch, (newValue) => {
         } else {
             pluginType.value = "inline";
         }
+        console.log(formData);
+
     });
 }, { immediate: true });
 
@@ -676,17 +660,6 @@ const submitForm = () => {
             formData.remote_addr = '';
         }
 
-        if (upstreamType.value === 'id') {
-            delete formData.upstream;
-            formData.service_id = '';
-        } else if (upstreamType.value === 'service') {
-            delete formData.upstream;
-            formData.upstream_id = '';
-        } else {
-            formData.upstream_id = '';
-            formData.service_id = '';
-        }
-
         // 获取非空值
         const submitData = getNonEmptyValues(formData);
         console.log(submitData);
@@ -714,12 +687,12 @@ const submitForm = () => {
 // 重置表单
 const resetForm = () => {
     Object.assign(formData, JSON.parse(JSON.stringify(initialFormData)));
-    // pluginsList.value = [];
-    // uriType.value = "multiple";
-    // hostType.value = "multiple";
-    // remoteAddrType.value = "multiple";
-    // upstreamType.value = "inline";
-    // pluginType.value = "inline";
+    pluginsList.value = [];
+    uriType.value = "multiple";
+    hostType.value = "multiple";
+    remoteAddrType.value = "multiple";
+    upstreamType.value = "inline";
+    pluginType.value = "inline";
 };
 </script>
 
