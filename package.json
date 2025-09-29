@@ -1,6 +1,11 @@
 {
   "name": "apisix-web-ui",
   "productName": "APISIX Web UI",
+  "description": "Apache APISIX Web UI - API Gateway Management Interface",
+  "author": {
+    "name": "Apache APISIX",
+    "email": "dev@apisix.apache.org"
+  },
   "private": true,
   "version": "1.0.0",
   "main": "electron/main.cjs",
@@ -82,7 +87,9 @@
       "icon": "public/image.png",
       "artifactName": "${name}-${version}-${arch}.${ext}",
       "category": "Development",
-      "description": "Apache APISIX Web UI - API Gateway Management Interface"
+      "description": "Apache APISIX Web UI - API Gateway Management Interface",
+      "maintainer": "Apache APISIX <dev@apisix.apache.org>",
+      "vendor": "Apache Software Foundation"
     },
     "nsis": {
       "oneClick": false,
