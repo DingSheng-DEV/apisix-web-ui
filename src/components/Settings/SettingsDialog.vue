@@ -1,27 +1,6 @@
 <template>
   <el-dialog v-model="dialogVisible" :title="t('settings.title') || '系统设置'" width="600px" :before-close="handleClose" top="10vh">
     <div class="settings-container">
-      <!-- 语言设置卡片 -->
-      <el-card class="settings-card">
-        <template #header>
-          <div class="card-header">
-            <span>{{ t('settings.language') || '语言设置' }}</span>
-          </div>
-        </template>
-        <el-form label-width="100px" label-position="left">
-          <el-form-item :label="t('settings.interfaceLanguage') || '界面语言'">
-            <el-select v-model="currentLanguage" @change="handleLanguageChange" style="width: 200px">
-              <el-option
-                v-for="option in languageOptions"
-                :key="option.value"
-                :label="option.label"
-                :value="option.value"
-              />
-            </el-select>
-          </el-form-item>
-        </el-form>
-      </el-card>
-
       <!-- API配置卡片 -->
       <el-card class="settings-card">
         <template #header>
@@ -35,7 +14,7 @@
             </el-button>
           </div>
         </template>
-        <el-form :model="form" label-width="100px" label-position="left">
+        <el-form :model="form" label-width="120px" label-position="left">
           <el-form-item :label="t('settings.apiUrl') || 'API地址'">
             <el-select v-model="form.api" :placeholder="t('settings.selectApiUrl') || t('settings.apiUrl')" clearable filterable allow-create style="width: 100%">
               <el-option v-for="item in apiOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -67,7 +46,7 @@
 
   <!-- 添加配置弹窗 -->
   <el-dialog v-model="addDialogVisible" :title="t('settings.addApiConfig') || '添加 API 配置'" width="500px" :before-close="handleAddDialogClose">
-    <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px" label-position="left">
+    <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="120px" label-position="left">
       <el-form-item :label="t('settings.apiUrl') || 'API地址'" prop="api">
         <el-input v-model="addForm.api" :placeholder="t('settings.inputApi') || t('settings.apiUrl')" clearable />
       </el-form-item>
@@ -106,31 +85,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'saved']);
 
 // i18n相关
-const { t, locale, switchLanguage, getCurrentLocale } = useI18nUtils();
-
-// 语言选项
-const languageOptions = ref([
-  {
-    value: 'zh-CN',
-    label: '简体中文'
-  },
-  {
-    value: 'en', 
-    label: 'English'
-  }
-]);
-
-// 当前语言
-const currentLanguage = ref(getCurrentLocale());
-
-// 处理语言切换
-const handleLanguageChange = (newLanguage) => {
-  switchLanguage(newLanguage);
-  ElMessage({
-    type: 'success',
-    message: t('settings.languageChanged') || '语言切换成功'
-  });
-};
+const { t } = useI18nUtils();
 
 // 下拉框选项数据
 const apiOptions = ref([
@@ -190,14 +145,7 @@ watch(() => props.visible, (newVal) => {
     form.api = apiConfig.api;
     form.port = apiConfig.port;
     form.token = apiConfig.token;
-    // 更新当前语言
-    currentLanguage.value = getCurrentLocale();
   }
-});
-
-// 监听语言变化
-watch(locale, (newLocale) => {
-  currentLanguage.value = newLocale;
 });
 
 // 监听dialogVisible的变化

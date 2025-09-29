@@ -1,11 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { ElDropdown, ElDropdownMenu, ElDropdownItem, ElInput, ElAvatar, ElIcon } from 'element-plus';
+import { ElDropdown, ElDropdownMenu, ElDropdownItem, ElInput, ElAvatar, ElIcon, ElSelect, ElOption, ElMessage } from 'element-plus';
 import { Search, Setting, User, SwitchButton } from '@element-plus/icons-vue';
 import SettingsDialog from '@/components/Settings/SettingsDialog.vue';
 import { useI18nUtils } from '@/utils/i18n.js';
 
-const { t } = useI18nUtils();
+const { t, switchLanguage, getCurrentLocale } = useI18nUtils();
 
 // 设置对话框可见性
 const settingsVisible = ref(false);
@@ -32,6 +32,30 @@ const handleSearch = () => {
   console.log('Searching for:', searchQuery.value);
 };
 
+// 语言选项
+const languageOptions = ref([
+  {
+    value: 'zh-CN',
+    label: '简体中文'
+  },
+  {
+    value: 'en', 
+    label: 'English'
+  }
+]);
+
+// 当前语言
+const currentLanguage = ref(getCurrentLocale());
+
+// 处理语言切换
+const handleLanguageChange = (newLanguage) => {
+  switchLanguage(newLanguage);
+  ElMessage({
+    type: 'success',
+    message: t('settings.languageChanged') || '语言切换成功'
+  });
+};
+
 // Dropdown handlers
 const handleCommand = (command) => {
   console.log('Command:', command);
@@ -51,6 +75,23 @@ const handleCommand = (command) => {
     </div>
 
     <div class="right-section">
+      <!-- 语言切换下拉框 -->
+      <div class="language-selector">
+        <el-select 
+          v-model="currentLanguage" 
+          @change="handleLanguageChange" 
+          style="width: 120px"
+          size="small"
+        >
+          <el-option
+            v-for="option in languageOptions"
+            :key="option.value"
+            :label="option.label"
+            :value="option.value"
+          />
+        </el-select>
+      </div>
+
       <div class="user-profile">
         <el-dropdown @command="handleCommand" trigger="click">
           <div class="user-info">
@@ -98,6 +139,11 @@ const handleCommand = (command) => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.language-selector {
+  display: flex;
+  align-items: center;
 }
 
 

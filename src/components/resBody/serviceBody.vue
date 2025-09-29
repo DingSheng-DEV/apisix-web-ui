@@ -1,6 +1,6 @@
 <template>
     <div class="form-container">
-        <el-form :model="formData" label-width="140px" ref="formRef">
+        <el-form :model="formData" label-width="180px" ref="formRef">
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
@@ -59,19 +59,19 @@
                 <el-form-item :label="t('form.pluginConfigLabel')" prop="plugins">
                     <el-button type="primary" size="small" @click="addPlugin">{{ t('common.add') }}</el-button>
                     <div v-for="(plugin, index) in pluginsList" :key="index" class="plugin-item">
-                        <el-row :gutter="10">
-                            <el-col :span="6">
+                        <el-row :gutter="12" style="align-items: flex-start;">
+                            <el-col :span="5">
                                 <el-select v-model="plugin.name" :placeholder="t('form.selectPlugin')" filterable>
                                     <el-option v-for="item in availablePlugins" :key="item" :label="item"
                                         :value="item" />
                                 </el-select>
                             </el-col>
-                            <el-col :span="15">
+                            <el-col :span="17">
                                 <el-input v-model="plugin.config" type="textarea" :rows="3"
                                     :placeholder="t('form.pluginConfigPlaceholder')" />
                             </el-col>
-                            <el-col :span="3">
-                                <el-button type="danger" size="small" @click="removePlugin(index)">{{ t('common.delete') }}</el-button>
+                            <el-col :span="2">
+                                <el-button type="danger" text @click="removePlugin(index)" :icon="Delete" />
                             </el-col>
                         </el-row>
                     </div>
@@ -193,6 +193,7 @@ import {
     ElOption,
     ElDivider
 } from 'element-plus';
+import { Delete } from '@element-plus/icons-vue';
 import { getServicesId, PatchServices, createServices, getUpstreams } from "@/api/index.js"
 import { getNonEmptyValues } from "@/utils/index.js";
 import { useI18nUtils } from '@/utils/i18n.js';
@@ -464,5 +465,16 @@ const resetForm = () => {
 </script>
 
 <style scoped>
-/* 使用全局统一样式，无需额外CSS */
+.plugin-item {
+    margin-bottom: 12px;
+    padding: 12px;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    background-color: #fafafa;
+}
+
+.plugin-item:hover {
+    border-color: #409eff;
+    background-color: #f0f9ff;
+}
 </style>

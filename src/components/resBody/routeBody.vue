@@ -1,6 +1,6 @@
 <template>
     <div class="form-container">
-        <el-form :model="formData" label-width="140px" :rules="rules" ref="formRef">
+        <el-form :model="formData" label-width="180px" :rules="rules" ref="formRef">
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
