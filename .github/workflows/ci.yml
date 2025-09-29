@@ -1,0 +1,229 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [ published ]
+
+jobs:
+  # 代码质量检查和测试
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 代码格式检查
+        run: |
+          if [ -f "package.json" ] && grep -q "lint" package.json; then
+            npm run lint
+          else
+            echo "未找到 lint 脚本，跳过代码检查"
+          fi
+
+      - name: 运行测试
+        run: |
+          if [ -f "package.json" ] && grep -q "test" package.json; then
+            npm run test
+          else
+            echo "未找到测试脚本，跳过测试"
+          fi
+
+  # Web 版本构建
+  build-web:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 构建 Web 版本
+        run: npm run build
+
+      - name: 上传 Web 构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: dist/
+          retention-days: 7
+
+  # 多平台 Electron 应用构建
+  build-electron:
+    needs: lint-and-test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+          - os: macos-latest
+            platform: darwin
+            arch: x64
+          - os: windows-latest
+            platform: win32
+            arch: x64
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 安装系统依赖 (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libdrm2 libxcomposite-dev libxdamage-dev libxrandr-dev libgbm-dev libxss-dev libasound2-dev
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 构建 Electron 应用
+        run: npm run electron:build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 为不同平台设置构建参数
+          CSC_IDENTITY_AUTO_DISCOVERY: false  # 禁用代码签名自动发现
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            build/*.exe
+            build/*.dmg
+            build/*.AppImage
+            build/*.deb
+            build/*.rpm
+            build/*.snap
+          retention-days: 7
+          if-no-files-found: warn
+
+  # 自动发布 (仅在 release 时)
+  release:
+    if: github.event_name == 'release'
+    needs: [build-web, build-electron]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 下载所有构建产物
+        uses: actions/download-artifact@v4
+
+      - name: 准备发布文件
+        run: |
+          mkdir -p release-files
+          
+          # 复制 Web 版本
+          if [ -d "web-dist" ]; then
+            cd web-dist
+            zip -r ../release-files/apisix-web-ui-web-${{ github.event.release.tag_name }}.zip .
+            cd ..
+          fi
+          
+          # 复制各平台 Electron 应用
+          find . -name "electron-*" -type d | while read dir; do
+            if [ -d "$dir" ]; then
+              platform=$(echo $dir | sed 's/.*electron-//' | sed 's/-x64//')
+              find "$dir" -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" \) -exec cp {} release-files/ \;
+            fi
+          done
+
+      - name: 上传发布文件到 Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release-files/*
+          tag_name: ${{ github.event.release.tag_name }}
+          name: APISIX Web UI ${{ github.event.release.tag_name }}
+          body: |
+            ## 📦 下载说明
+            
+            ### Web 版本
+            - `apisix-web-ui-web-*.zip` - 可部署到任何 Web 服务器的静态文件
+            
+            ### 桌面应用
+            - `*.exe` - Windows 可执行文件
+            - `*.dmg` - macOS 安装包
+            - `*.AppImage` - Linux 便携应用
+            - `*.deb` - Debian/Ubuntu 安装包
+            - `*.rpm` - RedHat/CentOS 安装包
+            
+            ## 🚀 更新内容
+            
+            请查看完整的 [CHANGELOG](./CHANGELOG.md) 了解详细更新内容。
+            
+            ---
+            
+            **完整源代码**: [Source code (zip)](https://github.com/${{ github.repository }}/archive/${{ github.event.release.tag_name }}.zip) | [Source code (tar.gz)](https://github.com/${{ github.repository }}/archive/${{ github.event.release.tag_name }}.tar.gz)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 自动部署 Web 版本到 GitHub Pages (可选)
+  deploy-pages:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    needs: build-web
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 下载 Web 构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist/
+
+      - name: 设置 Pages
+        uses: actions/configure-pages@v4
+
+      - name: 上传到 Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

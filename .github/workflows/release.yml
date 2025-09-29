@@ -1,0 +1,162 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # 匹配版本标签如 v1.0.0
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create_release.outputs.id }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 创建 Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: APISIX Web UI ${{ github.ref_name }}
+          body: |
+            ## 🎉 APISIX Web UI ${{ github.ref_name }} 发布
+
+            ### 📦 下载说明
+            
+            #### 桌面应用版本
+            - **Windows**: 下载 `APISIX-Web-UI-Setup-*.exe` 或 `APISIX-Web-UI-*.exe`
+            - **macOS**: 下载 `APISIX-Web-UI-*.dmg`
+            - **Linux**: 
+              - AppImage: `APISIX-Web-UI-*.AppImage` (通用)
+              - Debian/Ubuntu: `apisix-web-ui_*_amd64.deb`
+              - RedHat/CentOS: `apisix-web-ui-*.rpm`
+            
+            #### Web 版本
+            - `apisix-web-ui-web-${{ github.ref_name }}.zip` - 静态文件包，可部署到任何 Web 服务器
+
+            ### 🚀 主要特性
+            - 🎯 Apache APISIX 管理界面
+            - 🌐 支持多语言 (中文/英文)
+            - 💻 跨平台桌面应用
+            - 🔧 现代化的 Vue 3 + Element Plus UI
+
+            ### 📋 更新日志
+            请查看 [CHANGELOG.md](./CHANGELOG.md) 获取详细更新内容。
+
+            ---
+            
+            **项目主页**: https://github.com/${{ github.repository }}
+            **在线文档**: https://apisix.apache.org/
+          draft: false
+          prerelease: false
+
+  build-and-upload:
+    needs: create-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+            name: Linux
+          - os: macos-latest
+            platform: darwin
+            arch: x64
+            name: macOS
+          - os: windows-latest
+            platform: win32
+            arch: x64
+            name: Windows
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 安装系统依赖 (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libdrm2 libxcomposite-dev libxdamage-dev libxrandr-dev libgbm-dev libxss-dev libasound2-dev
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 构建应用 (${{ matrix.name }})
+        run: npm run electron:build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: 查找构建文件
+        id: find_assets
+        shell: bash
+        run: |
+          echo "查找构建产物..."
+          find build -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.snap" \) | while read file; do
+            echo "找到文件: $file"
+            echo "文件大小: $(ls -lh "$file" | awk '{print $5}')"
+          done
+          
+          # 将文件路径保存到环境变量
+          assets=$(find build -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.snap" \) | tr '\n' ' ')
+          echo "assets=$assets" >> $GITHUB_OUTPUT
+
+      - name: 上传构建产物到 Release
+        if: steps.find_assets.outputs.assets != ''
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for file in ${{ steps.find_assets.outputs.assets }}; do
+            if [ -f "$file" ]; then
+              echo "上传文件: $file"
+              filename=$(basename "$file")
+              gh release upload "${{ github.ref_name }}" "$file" --clobber
+            fi
+          done
+
+  build-web:
+    needs: create-release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 构建 Web 版本
+        run: npm run build
+
+      - name: 创建 Web 版本压缩包
+        run: |
+          cd dist
+          zip -r ../apisix-web-ui-web-${{ github.ref_name }}.zip .
+          cd ..
+
+      - name: 上传 Web 版本到 Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.ref_name }}" "apisix-web-ui-web-${{ github.ref_name }}.zip" --clobber

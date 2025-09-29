@@ -10,28 +10,113 @@
     "build": "vite build",
     "preview": "vite preview",
     "electron:serve": "vite build && electron .",
-    "electron:build": "vite build && electron-builder"
+    "electron:build": "vite build && electron-builder",
+    "electron:build:win": "vite build && electron-builder --win",
+    "electron:build:mac": "vite build && electron-builder --mac",
+    "electron:build:linux": "vite build && electron-builder --linux",
+    "dist": "npm run build && npm run electron:build",
+    "release": "npm run build && electron-builder --publish=always"
   },
   "build": {
-    "appId": "com.example.apisix-web-ui",
+    "appId": "com.apache.apisix-web-ui",
     "productName": "APISIX Web UI",
+    "copyright": "Copyright © 2024 Apache Software Foundation",
     "directories": {
-      "output": "build"
+      "output": "build",
+      "buildResources": "public"
     },
     "files": [
       "dist/**/*",
       "package.json",
       "electron/main.cjs",
-      "assets/**/*"
+      "electron/preload.js"
+    ],
+    "extraFiles": [
+      {
+        "from": "public",
+        "to": "public",
+        "filter": ["**/*"]
+      }
     ],
     "win": {
-      "target": "portable",
-      "icon": "public/image.png"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "public/image.png",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "publisherName": "Apache APISIX"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "public/image.png",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "category": "public.app-category.developer-tools"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "rpm",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "public/image.png",
+      "artifactName": "${name}-${version}-${arch}.${ext}",
+      "category": "Development",
+      "description": "Apache APISIX Web UI - API Gateway Management Interface"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "public/image.png",
+      "uninstallerIcon": "public/image.png",
+      "installerHeaderIcon": "public/image.png",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "dmg": {
+      "title": "${productName}",
+      "icon": "public/image.png",
+      "background": null,
+      "contents": [
+        {
+          "x": 410,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        }
+      ]
     },
     "electronDownload": {
       "mirror": "https://npmmirror.com/mirrors/electron/"
     },
-    "asar": false
+    "asar": false,
+    "compression": "maximum"
   },
   "dependencies": {
     "element-plus": "^2.9.9",

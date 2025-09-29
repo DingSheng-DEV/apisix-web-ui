@@ -1,0 +1,75 @@
+name: Auto Assign
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  add-labels:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: 为新 Issue 添加标签
+        if: github.event_name == 'issues'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['triage', 'needs-investigation']
+            })
+
+      - name: 为新 PR 添加标签
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['review-needed']
+            })
+
+      - name: 欢迎新贡献者
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // 检查是否是首次贡献者
+            const contributor = context.payload.pull_request.user.login;
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              creator: contributor
+            });
+            
+            if (pullRequests.length === 1) {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `🎉 欢迎您的首次贡献！感谢您对 APISIX Web UI 项目的支持！
+
+## 👀 接下来会发生什么？
+- 维护者将会审查您的 PR
+- 自动化测试将运行以确保代码质量
+- 如果需要修改，我们会在评论中提供反馈
+
+## 📋 贡献指南
+请确保您的 PR：
+- [ ] 遵循项目的代码规范
+- [ ] 包含适当的测试
+- [ ] 更新了相关文档
+- [ ] 通过了所有 CI 检查
+
+再次感谢您的贡献！ 🚀`
+              })
+            }
