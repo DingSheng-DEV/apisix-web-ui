@@ -99,8 +99,14 @@ jobs:
         run: npm run electron:build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # 禁用所有代码签名
+          # 禁用代码签名
           CSC_IDENTITY_AUTO_DISCOVERY: false
+          CSC_LINK: ""
+          CSC_KEY_PASSWORD: ""
+          # Windows 签名完全禁用
+          WIN_CSC_LINK: ""
+          WIN_CSC_KEY_PASSWORD: ""
+          WINDOWS_SIGN: false
 
       - name: 查找构建文件
         id: find_assets
