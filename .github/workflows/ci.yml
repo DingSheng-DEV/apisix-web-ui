@@ -111,8 +111,14 @@ jobs:
         run: npm run electron:build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # 为不同平台设置构建参数
-          CSC_IDENTITY_AUTO_DISCOVERY: false  # 禁用代码签名自动发现
+          # 禁用代码签名
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          # macOS 签名禁用
+          CSC_LINK: ""
+          CSC_KEY_PASSWORD: ""
+          # Windows 签名禁用
+          WIN_CSC_LINK: ""
+          WIN_CSC_KEY_PASSWORD: ""
 
       - name: 上传构建产物
         uses: actions/upload-artifact@v4

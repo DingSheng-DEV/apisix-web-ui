@@ -56,7 +56,9 @@
       ],
       "icon": "public/image.png",
       "artifactName": "${productName}-Setup-${version}.${ext}",
-      "publisherName": "Apache APISIX"
+      "publisherName": "Apache APISIX",
+      "certificateFile": null,
+      "certificatePassword": null
     },
     "mac": {
       "target": [
@@ -67,7 +69,8 @@
       ],
       "icon": "public/image.png",
       "artifactName": "${productName}-${version}-${arch}.${ext}",
-      "category": "public.app-category.developer-tools"
+      "category": "public.app-category.developer-tools",
+      "identity": null
     },
     "linux": {
       "target": [
