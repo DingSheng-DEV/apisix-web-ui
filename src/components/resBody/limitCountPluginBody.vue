@@ -1,12 +1,12 @@
 <template>
-    <div class="plugin-form-container">
-        <el-form :model="formData" label-width="180px" ref="formRef">
+    <div class="form-container">
+        <el-form :model="formData" label-width="140px" ref="formRef">
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
                     <span class="section-title">基本信息</span>
                 </template>
-                <el-form-item label="ID">
+                <el-form-item label="规则ID">
                     <el-input v-model="formData.id" disabled />
                 </el-form-item>
             </el-card>
@@ -225,35 +225,9 @@ const resetForm = () => {
 </script>
 
 <style scoped>
-.plugin-form-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.form-section {
-    margin-bottom: 20px;
-}
-
-.section-title {
-    font-size: 16px;
-    font-weight: bold;
-}
-
 .plugin-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.form-item-tip {
-    margin-left: 10px;
-    color: #909399;
-    font-size: 12px;
-}
-
-.form-actions {
-    text-align: center;
-    margin-top: 20px;
 }
 </style>

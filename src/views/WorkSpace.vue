@@ -30,9 +30,9 @@ const onSubmit = () => {
 <template>
     <div>
         <TopBar style="margin-bottom: 10px;"></TopBar>
-        <div style="display: flex;height:  calc(100vh - 150px)">
+        <div style="display: flex; height: calc(100vh - 150px);">
             <LeftSideBar></LeftSideBar>
-            <router-view style="width: 100%;"></router-view>
+            <router-view style="flex: 1; min-width: 0;"></router-view>
         </div>
     </div>
 

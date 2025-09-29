@@ -22,6 +22,77 @@ body {
   padding: 10px;
 }
 
-::-webkit-scrollbar{
-  width: 0;
+
+/* 统一表单弹窗样式 */
+.form-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.form-section {
+  margin-bottom: 24px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e8eaec;
+  overflow: hidden;
+}
+
+.form-section .el-card__header {
+  background: #fafbfc;
+  border-bottom: 1px solid #e8eaec;
+  padding: 16px 20px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.form-actions {
+  text-align: center;
+  padding: 24px 0;
+  margin-top: 24px;
+}
+
+.form-actions .el-button {
+  margin: 0 12px;
+  min-width: 80px;
+}
+
+.form-item-tip {
+  color: #6c757d;
+  font-size: 12px;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.plugin-item, .var-rule-item, .array-node-item {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.plugin-item:hover, .var-rule-item:hover, .array-node-item:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+/* 确保所有el-card组件都有统一的间距 */
+.form-container .el-card {
+  margin-bottom: 24px;
+}
+
+.form-container .el-card:last-of-type {
+  margin-bottom: 0;
+}
+
+/* 统一卡片内容区域的内边距 */
+.form-container .el-card__body {
+  padding: 24px;
 }

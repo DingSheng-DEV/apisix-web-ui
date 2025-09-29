@@ -120,22 +120,22 @@ const onSubmit = () => {
             <el-card style="margin-top: 10px;overflow: auto;">
                 <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
-                    <el-table-column prop="id" label="id" />
-                    <el-table-column prop="policy" label="policy" />
-                    <el-table-column prop="key" label="key" />
-                    <el-table-column prop="rejected_code" label="rejected_code" />
-                    <el-table-column prop="time_window" label="time_window" />
-                    <el-table-column label="Operations">
+                    <el-table-column prop="id" label="ID" />
+                    <el-table-column prop="policy" label="策略" />
+                    <el-table-column prop="key" label="键" />
+                    <el-table-column prop="rejected_code" label="拒绝状态码" />
+                    <el-table-column prop="time_window" label="时间窗口" />
+                    <el-table-column label="操作">
                         <template #default="scope">
-                            <el-button link type="primary" size="small" @click="handleDelete(scope)">Delete</el-button>
-                            <el-button link type="primary" size="small" @click="handlePatch(scope)">Patch</el-button>
+                            <el-button link type="danger" size="small" @click="handleDelete(scope)">删除</el-button>
+                            <el-button link type="primary" size="small" @click="handlePatch(scope)">编辑</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
             </el-card>
         </div>
 
-        <el-dialog v-model="dialogVisible" title="Parms" @close="handleClose">
+        <el-dialog v-model="dialogVisible" title="参数配置" @close="handleClose">
             <global_rules_Body :total="total" :patch="patch"></global_rules_Body>
         </el-dialog>
     </div>

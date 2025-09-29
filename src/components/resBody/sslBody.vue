@@ -1,5 +1,5 @@
 <template>
-    <div class="ssl-form-container">
+    <div class="form-container">
         <el-form :model="formData" label-width="120px" ref="formRef">
             <!-- 基本信息部分 -->
             <el-card class="form-section">
@@ -7,19 +7,19 @@
                     <span class="section-title">基本信息</span>
                 </template>
 
-                <el-form-item label="id" prop="id" disabled>
+                <el-form-item label="证书ID" prop="id" disabled>
                     <el-input v-model="formData.id" placeholder="请输入SSL证书ID（可选）" />
                     <span class="form-item-tip">系统自动生成</span>
                 </el-form-item>
 
-                <el-form-item label="status" prop="status">
+                <el-form-item label="状态" prop="status">
                     <el-radio-group v-model="formData.status">
                         <el-radio :label="1">启用</el-radio>
                         <el-radio :label="0">禁用</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
-                <el-form-item label="type" prop="type">
+                <el-form-item label="证书类型" prop="type">
                     <el-radio-group v-model="formData.type">
                         <el-radio label="server">服务器证书</el-radio>
                         <el-radio label="client">客户端证书</el-radio>
@@ -33,24 +33,24 @@
                     <span class="section-title">证书配置（必填）</span>
                 </template>
 
-                <el-form-item label="cert" prop="cert" required>
+                <el-form-item label="证书内容" prop="cert" required>
                     <el-input v-model="formData.cert" type="textarea" :rows="5" placeholder="请输入PEM格式的证书内容" />
                     <span class="form-item-tip">PEM格式的SSL证书内容</span>
                 </el-form-item>
 
-                <el-form-item label="key" prop="key" required>
+                <el-form-item label="私钥内容" prop="key" required>
                     <el-input v-model="formData.key" type="textarea" :rows="5" placeholder="请输入PEM格式的私钥内容" />
                     <span class="form-item-tip">PEM格式的SSL私钥内容</span>
                 </el-form-item>
 
-                <el-form-item label="snis" prop="snis" required>
+                <el-form-item label="域名列表" prop="snis" required>
                     <array-input v-model="formData.snis" placeholder="例如: example.com" />
                     <span class="form-item-tip">服务器名称指示列表，当类型为'server'时必填</span>
                 </el-form-item>
 
                 <el-divider content-position="left">额外证书（可选）</el-divider>
 
-                <el-form-item label="certs & keys">
+                <el-form-item label="额外证书">
                     <el-button type="primary" @click="addExtraCert" plain size="small">添加额外证书</el-button>
                     <span class="form-item-tip">为同一个SNI添加多个证书</span>
                 </el-form-item>
@@ -77,12 +77,12 @@
                     <span class="section-title">客户端证书验证配置（可选）</span>
                 </template>
 
-                <el-form-item label="client.ca" prop="client.ca">
+                <el-form-item label="客户端CA证书" prop="client.ca">
                     <el-input v-model="formData.client.ca" type="textarea" :rows="5" placeholder="请输入用于客户端证书验证的CA证书" />
                     <span class="form-item-tip">用于客户端证书验证的CA证书</span>
                 </el-form-item>
 
-                <el-form-item label="client.depth" prop="client.depth">
+                <el-form-item label="验证深度" prop="client.depth">
                     <el-input-number v-model="formData.client.depth" :min="0" :max="10" />
                     <span class="form-item-tip">客户端证书的最大验证深度</span>
                 </el-form-item>
@@ -99,13 +99,13 @@
                     <span class="section-title">高级配置</span>
                 </template>
 
-                <el-form-item label="ssl_protocols" prop="ssl_protocols">
+                <el-form-item label="SSL协议" prop="ssl_protocols">
                     <array-input v-model="formData.ssl_protocols" placeholder="例如: TLSv1.2"
                         :options="sslProtocolOptions" />
                     <span class="form-item-tip">支持的SSL协议版本</span>
                 </el-form-item>
 
-                <el-form-item label="labels" prop="labels">
+                <el-form-item label="标签" prop="labels">
                     <key-value-input @send-data="updateLabels" v-model="formData.labels" key-placeholder="键"
                         value-placeholder="值" />
                     <span class="form-item-tip">SSL证书的自定义标签</span>
@@ -303,26 +303,6 @@ const resetForm = () => {
 </script>
 
 <style scoped>
-.ssl-form-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.form-section {
-    margin-bottom: 20px;
-}
-
-.section-title {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.form-actions {
-    text-align: center;
-    margin-top: 20px;
-}
-
 .extra-cert-item {
     border: 1px dashed #dcdfe6;
     border-radius: 4px;
@@ -338,11 +318,5 @@ const resetForm = () => {
 .cert-input-group .el-input {
     flex: 1;
     margin-right: 10px;
-}
-
-.form-item-tip {
-    margin-left: 10px;
-    color: #909399;
-    font-size: 12px;
 }
 </style>

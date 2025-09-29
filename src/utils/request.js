@@ -1,33 +1,33 @@
 // 引入 axios
-import axios from 'axios';
+import axios from "axios";
+import { apiConfig } from "./config.js";
 
 // 创建 axios 实例
 const Http = axios.create({
-  baseURL:"/api", // 设置请求的基本URL
-  timeout: 5000, // 设置超时时间（毫秒）
+  baseURL: '/api', // 使用Vite代理
+  timeout: 15000, // 增加超时时间（毫秒）
   headers: {
-    'Content-Type': 'application/json',// 默认请求头
-    'X-API-KEY':"rXfVHttsBxrsZjbeLyhDAqDmkcpeiBdG", 
+    "Content-Type": "application/json", // 默认请求头
+    "X-API-KEY": apiConfig.token,
   },
 });
 
-
-
-// // 请求拦截器
-// Http.interceptors.request.use(
-//   (config) => {
-//     // 在发送请求之前做些什么
-//     console.log('请求拦截器：', config);
-//     // 可以在这里添加认证 token 等
-//     // config.headers['Authorization'] = 'Bearer your-token';
-//     return config;1
-//   },
-//   (error) => {
-//     // 对请求错误做些什么
-//     console.error('请求拦截器错误：', error);
-//     return Promise.reject(error);
-//   }
-// );
+// 请求拦截器
+Http.interceptors.request.use(
+  (config) => {
+    // 在发送请求之前做些什么
+    // 每次请求都使用最新的token
+    config.headers["X-API-KEY"] = apiConfig.token;
+    
+    // 在开发环境中使用代理，不修改baseURL
+    return config;
+  },
+  (error) => {
+    // 对请求错误做些什么
+    console.error("请求拦截器错误：", error);
+    return Promise.reject(error);
+  }
+);
 
 // // 响应拦截器
 // Http.interceptors.response.use(

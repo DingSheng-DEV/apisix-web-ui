@@ -13,7 +13,8 @@ const props = defineProps({
         type: String,
     },
     valuePlaceholder: {
-        type: Number,
+        type: String,
+        default: "值"
     }
 });
 
@@ -67,8 +68,8 @@ const removeItem = (index) => {
 
         <div class="key-value-input-items" v-show="items.length !== 0">
             <div v-for="(item, index) in items" :key="index" class="key-value-input-item">
-                <el-input v-model="item.key" :placeholder="'节点地址 (如: 127.0.0.1:8080)'" />
-                <el-input v-model="item.value" :placeholder="'权重 (如: 100)'" />
+                <el-input v-model="item.key" :placeholder="keyPlaceholder || '键'" />
+                <el-input v-model="item.value" :placeholder="valuePlaceholder || '值'" />
                 <el-button type="danger" text @click="removeItem(index)" :icon="Delete" />
 
             </div>

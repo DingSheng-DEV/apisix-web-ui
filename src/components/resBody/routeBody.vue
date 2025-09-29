@@ -1,6 +1,6 @@
 <template>
-    <div class="route-form-container">
-        <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+    <div class="form-container">
+        <el-form :model="formData" label-width="140px" :rules="rules" ref="formRef">
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
@@ -54,34 +54,10 @@
                     placeholder="例如: /api/v1" />
 
                 <!-- Host/Hosts 选择 -->
-                <el-form-item label="Host类型">
-                    <el-radio-group v-model="hostType" @change="handleHostTypeChange">
-                        <el-radio label="single">单个Host</el-radio>
-                        <el-radio label="multiple">多个Host</el-radio>
-                    </el-radio-group>
+                <el-form-item label="Host (可选)" prop="host">
+                    <el-input v-model="formData.host" placeholder="例如: example.com (留空表示匹配所有)" />
+                    <span class="form-item-tip">指定域名匹配，留空则匹配所有域名</span>
                 </el-form-item>
-
-                <el-form-item v-if="hostType === 'single'" label="Host" prop="host">
-                    <el-input v-model="formData.host" placeholder="例如: example.com" />
-                </el-form-item>
-
-                <array-input v-if="hostType === 'multiple'" v-model="formData.hosts" label="Host列表"
-                    placeholder="例如: example.com" />
-
-                <!-- Remote Addr/Addrs 选择 -->
-                <el-form-item label="远程地址类型">
-                    <el-radio-group v-model="remoteAddrType" @change="handleRemoteAddrTypeChange">
-                        <el-radio label="single">单个地址</el-radio>
-                        <el-radio label="multiple">多个地址</el-radio>
-                    </el-radio-group>
-                </el-form-item>
-
-                <el-form-item v-if="remoteAddrType === 'single'" label="远程地址" prop="remote_addr">
-                    <el-input v-model="formData.remote_addr" placeholder="例如: 192.168.1.1" />
-                </el-form-item>
-
-                <array-input v-if="remoteAddrType === 'multiple'" v-model="formData.remote_addrs" label="远程地址列表"
-                    placeholder="例如: 192.168.1.1" />
 
                 <!-- HTTP方法 -->
                 <array-input v-model="formData.methods" label="HTTP方法" placeholder="例如: GET" :options="httpMethods" />
@@ -90,7 +66,7 @@
             <!-- 高级匹配规则 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">高级匹配规则</span>
+                    <span class="section-title">高级匹配规则 (可选)</span>
                 </template>
 
                 <!-- vars 变量匹配 -->
@@ -151,21 +127,23 @@
                 </el-form-item>
 
                 <!-- 上游ID配置 -->
-                <el-form-item v-if="upstreamType === 'id'" label="upstream_id" prop="upstream_id">
-                    <el-select v-model="formData.upstream_id" filterable placeholder="Select upstream ID">
-                        <el-option v-for="item in upstreamList" :key="item.id" :label="item.id" :value="item.id">
+                <el-form-item v-if="upstreamType === 'id'" label="上游ID" prop="upstream_id">
+                    <el-select v-model="formData.upstream_id" filterable placeholder="选择上游ID" 
+                        @focus="ensureUpstreamList" :loading="upstreamLoading">
+                        <el-option v-for="item in upstreamList" :key="item.id" 
+                            :label="item.name || item.id" :value="item.id">
                         </el-option>
                     </el-select>
-                    <span class="form-item-tip">Select from existing upstreams</span>
+                    <span class="form-item-tip">从现有上游中选择</span>
                 </el-form-item>
 
                 <!-- 内联上游配置 -->
                 <template v-if="upstreamType === 'inline'">
                     <el-form-item label="负载均衡类型" prop="upstream.type">
                         <el-select v-model="formData.upstream.type" placeholder="请选择负载均衡类型">
-                            <el-option label="轮询(roundrobin)" value="roundrobin" />
-                            <el-option label="一致性哈希(chash)" value="chash" />
-                            <el-option label="最少连接(least_conn)" value="least_conn" />
+                            <el-option label="轮询" value="roundrobin" />
+                            <el-option label="一致性哈希" value="chash" />
+                            <el-option label="最少连接" value="least_conn" />
                         </el-select>
                     </el-form-item>
 
@@ -185,12 +163,14 @@
                 </template>
 
                 <!-- 服务ID配置 -->
-                <el-form-item label="service_id" prop="service_id">
-                    <el-select v-model="formData.service_id" filterable placeholder="Select service ID">
-                        <el-option v-for="item in serviceList" :key="item.id" :label="item.id" :value="item.id">
+                <el-form-item label="服务ID" prop="service_id">
+                    <el-select v-model="formData.service_id" filterable placeholder="选择服务ID" 
+                        @focus="onServiceSelectFocus" :loading="serviceLoading">
+                        <el-option v-for="item in serviceList" :key="item.id" 
+                            :label="item.name || item.id" :value="item.id">
                         </el-option>
                     </el-select>
-                    <span class="form-item-tip">Select from existing services</span>
+                    <span class="form-item-tip">从现有服务中选择</span>
                 </el-form-item>
 
 
@@ -233,14 +213,14 @@
                 </el-form-item>
 
                 <!-- 插件配置ID -->
-                <el-form-item v-if="pluginType === 'config_id'" label="plugin_config_id" prop="plugin_config_id">
+                <el-form-item v-if="pluginType === 'config_id'" label="插件配置ID" prop="plugin_config_id">
                     <el-input v-model="formData.plugin_config_id" placeholder="请输入插件配置ID" />
                     <span class="form-item-tip">使用已存在的插件配置ID</span>
                 </el-form-item>
 
                 <!-- 内联插件配置 -->
                 <template v-if="pluginType === 'inline'">
-                    <el-form-item label="plugins" prop="plugins">
+                    <el-form-item label="插件配置" prop="plugins">
                         <div style="width: 100%;">
                             <el-button type="primary" size="small" @click="addPlugin">添加插件</el-button>
                         </div>
@@ -377,6 +357,8 @@ const pluginType = ref("inline");
 // 上游和服务列表
 const upstreamList = ref([]);
 const serviceList = ref([]);
+const upstreamLoading = ref(false);
+const serviceLoading = ref(false);
 
 // 插件列表
 const pluginsList = ref([]);
@@ -504,37 +486,63 @@ const httpMethods = ref([
 
 // 获取上游列表
 const fetchUpstreams = () => {
+    upstreamLoading.value = true;
     getUpstreams().then(res => {
         if (res.data && res.data.list) {
             upstreamList.value = res.data.list.map(item => ({
                 id: item.value.id || item.id,
-                name: item.value.name || ''
+                name: item.value.name || item.value.desc || `上游-${item.value.id || item.id}`
             }));
         }
     }).catch(err => {
-        ElMessage.error('Failed to fetch upstream list: ' + err.message);
+        ElMessage.error('获取上游列表失败: ' + err.message);
+    }).finally(() => {
+        upstreamLoading.value = false;
     });
 };
 
 // 获取服务列表
 const fetchServices = () => {
+    serviceLoading.value = true;
     getServices().then(res => {
         if (res.data && res.data.list) {
             serviceList.value = res.data.list.map(item => ({
                 id: item.value.id || item.id,
-                name: item.value.name || ''
+                name: item.value.name || item.value.desc || `服务-${item.value.id || item.id}`
             }));
         }
     }).catch(err => {
-        ElMessage.error('Failed to fetch service list: ' + err.message);
+        ElMessage.error('获取服务列表失败: ' + err.message);
+    }).finally(() => {
+        serviceLoading.value = false;
     });
 };
 
-// 组件挂载时获取上游和服务列表
-onMounted(() => {
-    fetchUpstreams();
-    fetchServices();
+// 当需要上游列表时才获取
+const ensureUpstreamList = () => {
+    if (upstreamList.value.length === 0) {
+        fetchUpstreams();
+    }
+};
+
+// 当需要服务列表时才获取
+const ensureServiceList = () => {
+    if (serviceList.value.length === 0) {
+        fetchServices();
+    }
+};
+
+// 监听上游类型变化，按需加载数据
+watch(() => upstreamType.value, (newType) => {
+    if (newType === 'id') {
+        ensureUpstreamList();
+    }
 });
+
+// 监听服务ID字段的focus事件，按需加载数据
+const onServiceSelectFocus = () => {
+    ensureServiceList();
+};
 
 watch(() => props.patch, (newValue) => {
     // 重置表单数据
@@ -697,43 +705,5 @@ const resetForm = () => {
 </script>
 
 <style scoped>
-.route-form-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.form-section {
-    margin-bottom: 20px;
-}
-
-.section-title {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.form-actions {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.var-rule-item {
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px dashed #dcdfe6;
-    border-radius: 4px;
-}
-
-.plugin-item {
-    margin-bottom: 15px;
-    padding: 15px;
-    border: 1px dashed #dcdfe6;
-    border-radius: 4px;
-}
-
-.form-item-tip {
-    margin-left: 10px;
-    color: #909399;
-    font-size: 12px;
-}
+/* 使用全局统一样式，无需额外CSS */
 </style>

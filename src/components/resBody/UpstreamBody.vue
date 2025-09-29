@@ -1,6 +1,6 @@
 <template>
-    <div class="upstream-form-container">
-        <el-form :model="formData" label-width="150px" ref="formRef">
+    <div class="form-container">
+        <el-form :model="formData" label-width="140px" ref="formRef">
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
@@ -9,12 +9,12 @@
 
                 <el-row :gutter="20">
                     <el-col :span="12">
-                        <el-form-item label="name" prop="name">
+                        <el-form-item label="上游名称" prop="name">
                             <el-input v-model="formData.name" placeholder="请输入上游名称" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="desc" prop="desc">
+                        <el-form-item label="描述" prop="desc">
                             <el-input v-model="formData.desc" placeholder="请输入上游描述" />
                         </el-form-item>
                     </el-col>
@@ -22,66 +22,63 @@
 
                 <el-row :gutter="20">
                     <el-col :span="12">
-                        <el-form-item label="scheme" prop="scheme">
+                        <el-form-item label="协议" prop="scheme">
                             <el-select v-model="formData.scheme" placeholder="请选择协议">
-                                <el-option label="http" value="http" />
-                                <el-option label="https" value="https" />
-                                <el-option label="grpc" value="grpc" />
-                                <el-option label="grpcs" value="grpcs" />
-                                <el-option label="tcp" value="tcp" />
-                                <el-option label="udp" value="udp" />
-                                <el-option label="tls" value="tls" />
+                                <el-option label="HTTP" value="http" />
+                                <el-option label="HTTPS" value="https" />
+                                <el-option label="gRPC" value="grpc" />
+                                <el-option label="gRPCs" value="grpcs" />
                             </el-select>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="type" prop="type">
+                        <el-form-item label="负载均衡" prop="type">
                             <el-select v-model="formData.type" placeholder="请选择负载均衡算法">
-                                <el-option label="roundrobin" value="roundrobin" />
-                                <el-option label="chash" value="chash" />
-                                <el-option label="least_conn" value="least_conn" />
+                                <el-option label="轮询" value="roundrobin" />
+                                <el-option label="一致性哈希" value="chash" />
+                                <el-option label="最少连接" value="least_conn" />
                             </el-select>
                         </el-form-item>
                     </el-col>
                 </el-row>
 
-                <el-form-item label="pass_host" prop="pass_host">
+                <el-form-item label="主机传递" prop="pass_host">
                     <el-select v-model="formData.pass_host" placeholder="请选择主机传递方式">
-                        <el-option label="pass" value="pass" />
-                        <el-option label="node" value="node" />
-                        <el-option label="rewrite" value="rewrite" />
+                        <el-option label="透传" value="pass" />
+                        <el-option label="节点(node)" value="node" />
+                        <el-option label="重写(rewrite)" value="rewrite" />
                     </el-select>
                 </el-form-item>
 
-                <el-form-item v-if="formData.pass_host === 'rewrite'" label="upstream_host" prop="upstream_host">
+                <el-form-item v-if="formData.pass_host === 'rewrite'" label="上游主机" prop="upstream_host">
                     <el-input v-model="formData.upstream_host" placeholder="请输入主机名" />
                 </el-form-item>
 
-                <el-form-item v-if="formData.type === 'chash'" label="hash_on" prop="hash_on">
+                <el-form-item v-if="formData.type === 'chash'" label="哈希类型" prop="hash_on">
                     <el-select v-model="formData.hash_on" placeholder="请选择哈希类型">
-                        <el-option label="vars" value="vars" />
-                        <el-option label="header" value="header" />
-                        <el-option label="cookie" value="cookie" />
-                        <el-option label="consumer" value="consumer" />
-                        <el-option label="ip" value="ip" />
+                        <el-option label="变量(vars)" value="vars" />
+                        <el-option label="请求头(header)" value="header" />
+                        <el-option label="Cookie" value="cookie" />
+                        <el-option label="消费者(consumer)" value="consumer" />
+                        <el-option label="IP地址" value="ip" />
                     </el-select>
                 </el-form-item>
 
-                <el-form-item v-if="formData.type === 'chash' && formData.hash_on" label="key" prop="key">
+                <el-form-item v-if="formData.type === 'chash' && formData.hash_on" label="哈希键" prop="key">
                     <el-input v-model="formData.key" :placeholder="getKeyPlaceholder(formData.hash_on)" />
                 </el-form-item>
 
-                <el-form-item label="retries" prop="retries">
+                <el-form-item label="重试次数" prop="retries">
                     <el-input-number v-model="formData.retries" :min="0" />
                     <span class="form-item-tip">失败请求的重试次数</span>
                 </el-form-item>
 
-                <el-form-item label="retry_timeout" prop="retry_timeout">
+                <el-form-item label="重试超时" prop="retry_timeout">
                     <el-input-number v-model="formData.retry_timeout" :min="0" />
                     <span class="form-item-tip">重试超时时间（秒）</span>
                 </el-form-item>
 
-                <el-form-item label="tls.client_cert_id" prop="tls.client_cert_id">
+                <el-form-item label="客户端证书ID" prop="tls.client_cert_id">
                     <el-input v-model="formData['tls.client_cert_id']" placeholder="请输入客户端证书ID" />
                     <span class="form-item-tip">连接到上游时使用的客户端证书ID</span>
                 </el-form-item>
@@ -93,7 +90,7 @@
                     <span class="section-title">节点配置</span>
                 </template>
 
-                <el-form-item label="nodes" prop="nodes">
+                <el-form-item label="节点配置" prop="nodes">
                     <el-radio-group v-model="nodesType" @change="handleNodesTypeChange">
                         <el-radio label="hash">哈希格式</el-radio>
                         <el-radio label="array">数组格式</el-radio>
@@ -151,33 +148,32 @@
                 <template v-if="enableActiveChecks">
                     <el-divider content-position="left">主动健康检查</el-divider>
 
-                    <el-form-item label="checks.active.type" prop="checks.active.type">
+                    <el-form-item label="检查类型" prop="checks.active.type">
                         <el-select v-model="formData.checks.active.type" placeholder="请选择检查类型">
-                            <el-option label="http" value="http" />
-                            <el-option label="https" value="https" />
-                            <el-option label="tcp" value="tcp" />
+                            <el-option label="HTTP" value="http" />
+                            <el-option label="HTTPS" value="https" />
                         </el-select>
                     </el-form-item>
 
                     <el-form-item v-if="['http', 'https'].includes(formData.checks.active.type)"
-                        label="checks.active.http_path" prop="checks.active.http_path">
+                        label="检查路径" prop="checks.active.http_path">
                         <el-input v-model="formData.checks.active.http_path" placeholder="HTTP检查路径 (例如: /status)" />
                     </el-form-item>
 
                     <el-form-item v-if="['http', 'https'].includes(formData.checks.active.type)"
-                        label="checks.active.host" prop="checks.active.host">
+                        label="检查主机" prop="checks.active.host">
                         <el-input v-model="formData.checks.active.host" placeholder="HTTP检查的Host头" />
                     </el-form-item>
 
                     <el-row :gutter="20">
                         <el-col :span="12">
-                            <el-form-item label="checks.active.port" prop="checks.active.port">
+                            <el-form-item label="检查端口" prop="checks.active.port">
                                 <el-input-number v-model="formData.checks.active.port" :min="1" :max="65535"
                                     placeholder="端口" />
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="checks.active.timeout" prop="checks.active.timeout">
+                            <el-form-item label="检查超时" prop="checks.active.timeout">
                                 <el-input-number v-model="formData.checks.active.timeout" :min="1"
                                     placeholder="超时时间（秒）" />
                             </el-form-item>
@@ -188,13 +184,13 @@
 
                     <el-row :gutter="20">
                         <el-col :span="8">
-                            <el-form-item label="checks.active.healthy.interval" prop="checks.active.healthy.interval">
+                            <el-form-item label="健康检查间隔" prop="checks.active.healthy.interval">
                                 <el-input-number v-model="formData.checks.active.healthy.interval" :min="1"
                                     placeholder="间隔时间（秒）" />
                             </el-form-item>
                         </el-col>
                         <el-col :span="8">
-                            <el-form-item label="checks.active.healthy.successes"
+                            <el-form-item label="健康成功次数"
                                 prop="checks.active.healthy.successes">
                                 <el-input-number v-model="formData.checks.active.healthy.successes" :min="1"
                                     placeholder="所需成功次数" />
@@ -202,7 +198,7 @@
                         </el-col>
                         <el-col :span="8">
                             <el-form-item v-if="['http', 'https'].includes(formData.checks.active.type)"
-                                label="checks.active.healthy.status" prop="checks.active.healthy.status">
+                                label="健康状态码" prop="checks.active.healthy.status">
                                 <el-select v-model="formData.checks.active.healthy.status" multiple
                                     placeholder="HTTP状态码">
                                     <el-option label="200" value="200" />
@@ -221,7 +217,7 @@
 
                     <el-row :gutter="20">
                         <el-col :span="8">
-                            <el-form-item label="checks.active.unhealthy.interval"
+                            <el-form-item label="不健康检查间隔"
                                 prop="checks.active.unhealthy.interval">
                                 <el-input-number v-model="formData.checks.active.unhealthy.interval" :min="1"
                                     placeholder="间隔时间（秒）" />
@@ -229,19 +225,19 @@
                         </el-col>
                         <el-col :span="8">
                             <el-form-item v-if="['http', 'https'].includes(formData.checks.active.type)"
-                                label="checks.active.unhealthy.http_failures"
+                                label="HTTP失败次数"
                                 prop="checks.active.unhealthy.http_failures">
                                 <el-input-number v-model="formData.checks.active.unhealthy.http_failures" :min="1"
                                     placeholder="HTTP失败次数" />
                             </el-form-item>
-                            <el-form-item v-else label="checks.active.unhealthy.tcp_failures"
+                            <el-form-item v-else label="TCP失败次数"
                                 prop="checks.active.unhealthy.tcp_failures">
                                 <el-input-number v-model="formData.checks.active.unhealthy.tcp_failures" :min="1"
                                     placeholder="TCP失败次数" />
                             </el-form-item>
                         </el-col>
                         <el-col :span="8">
-                            <el-form-item label="checks.active.unhealthy.timeouts"
+                            <el-form-item label="超时次数"
                                 prop="checks.active.unhealthy.timeouts">
                                 <el-input-number v-model="formData.checks.active.unhealthy.timeouts" :min="1"
                                     placeholder="超时次数" />
@@ -257,11 +253,10 @@
                 <template v-if="enablePassiveChecks">
                     <el-divider content-position="left">被动健康检查</el-divider>
 
-                    <el-form-item label="checks.passive.type" prop="checks.passive.type">
+                    <el-form-item label="被动检查类型" prop="checks.passive.type">
                         <el-select v-model="formData.checks.passive.type" placeholder="请选择检查类型">
-                            <el-option label="http" value="http" />
-                            <el-option label="https" value="https" />
-                            <el-option label="tcp" value="tcp" />
+                            <el-option label="HTTP" value="http" />
+                            <el-option label="HTTPS" value="https" />
                         </el-select>
                     </el-form-item>
 
@@ -269,7 +264,7 @@
 
                     <el-row :gutter="20">
                         <el-col :span="12">
-                            <el-form-item label="checks.passive.healthy.successes"
+                            <el-form-item label="被动健康成功次数"
                                 prop="checks.passive.healthy.successes">
                                 <el-input-number v-model="formData.checks.passive.healthy.successes" :min="1"
                                     placeholder="所需成功次数" />
@@ -277,7 +272,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item v-if="['http', 'https'].includes(formData.checks.passive.type)"
-                                label="checks.passive.healthy.status" prop="checks.passive.healthy.status">
+                                label="被动健康状态码" prop="checks.passive.healthy.status">
                                 <el-select v-model="formData.checks.passive.healthy.status" multiple
                                     placeholder="HTTP状态码">
                                     <el-option label="200" value="200" />
@@ -297,19 +292,19 @@
                     <el-row :gutter="20">
                         <el-col :span="8">
                             <el-form-item v-if="['http', 'https'].includes(formData.checks.passive.type)"
-                                label="checks.passive.unhealthy.http_failures"
+                                label="被动HTTP失败次数"
                                 prop="checks.passive.unhealthy.http_failures">
                                 <el-input-number v-model="formData.checks.passive.unhealthy.http_failures" :min="1"
                                     placeholder="HTTP失败次数" />
                             </el-form-item>
-                            <el-form-item v-else label="checks.passive.unhealthy.tcp_failures"
+                            <el-form-item v-else label="被动TCP失败次数"
                                 prop="checks.passive.unhealthy.tcp_failures">
                                 <el-input-number v-model="formData.checks.passive.unhealthy.tcp_failures" :min="1"
                                     placeholder="TCP失败次数" />
                             </el-form-item>
                         </el-col>
                         <el-col :span="8">
-                            <el-form-item label="checks.passive.unhealthy.timeouts"
+                            <el-form-item label="被动超时次数"
                                 prop="checks.passive.unhealthy.timeouts">
                                 <el-input-number v-model="formData.checks.passive.unhealthy.timeouts" :min="1"
                                     placeholder="超时次数" />
@@ -317,7 +312,7 @@
                         </el-col>
                         <el-col :span="8">
                             <el-form-item v-if="['http', 'https'].includes(formData.checks.passive.type)"
-                                label="checks.passive.unhealthy.status" prop="checks.passive.unhealthy.status">
+                                label="被动不健康状态码" prop="checks.passive.unhealthy.status">
                                 <el-select v-model="formData.checks.passive.unhealthy.status" multiple
                                     placeholder="HTTP状态码">
                                     <el-option label="500" value="500" />
@@ -338,17 +333,17 @@
                 </template>
                 <el-row :gutter="10">
                     <el-col :span="8">
-                        <el-form-item label="connect">
+                        <el-form-item label="连接超时">
                             <el-input-number v-model="formData.timeout.connect" :min="0" :step="1" placeholder="秒" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="8">
-                        <el-form-item label="send">
+                        <el-form-item label="发送超时">
                             <el-input-number v-model="formData.timeout.send" :min="0" :step="1" placeholder="秒" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="8">
-                        <el-form-item label="read">
+                        <el-form-item label="读取超时">
                             <el-input-number v-model="formData.timeout.read" :min="0" :step="1" placeholder="秒" />
                         </el-form-item>
                     </el-col>
@@ -362,7 +357,7 @@
                     <span class="section-title">标签配置</span>
                 </template>
 
-                <el-form-item label="labels" prop="labels">
+                <el-form-item label="标签" prop="labels">
                     <key-value-input @send-data="updateLabels" v-model="formData.labels" key-placeholder="键"
                         value-placeholder="值" />
                 </el-form-item>
@@ -426,7 +421,7 @@ const initialFormData = {
     retries: 1,
     retry_timeout: 0,
     nodes: {
-        "127.0.0.1:9180": 1
+        "127.0.0.1:8080": 1
     },
     type: "roundrobin",
     scheme: "http",
@@ -732,36 +727,5 @@ const resetForm = () => {
 </script>
 
 <style scoped>
-.upstream-form-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.form-section {
-    margin-bottom: 20px;
-}
-
-.section-title {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.form-actions {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.array-node-item {
-    margin-bottom: 15px;
-    padding: 15px;
-    border: 1px dashed #dcdfe6;
-    border-radius: 4px;
-}
-
-.form-item-tip {
-    margin-left: 10px;
-    color: #909399;
-    font-size: 12px;
-}
+/* 使用全局统一样式，无需额外CSS */
 </style>

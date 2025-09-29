@@ -1,18 +1,29 @@
 <script setup>
 import { ref } from 'vue';
-import { ElDropdown, ElDropdownMenu, ElDropdownItem, ElBadge, ElInput, ElAvatar } from 'element-plus';
-import { Search, Bell, Message, Setting } from '@element-plus/icons-vue';
+import { ElDropdown, ElDropdownMenu, ElDropdownItem, ElInput, ElAvatar, ElIcon } from 'element-plus';
+import { Search, Setting, User, SwitchButton } from '@element-plus/icons-vue';
+import SettingsDialog from '@/components/Settings/SettingsDialog.vue';
+
+// 设置对话框可见性
+const settingsVisible = ref(false);
+
+// 打开设置对话框
+const openSettings = () => {
+  settingsVisible.value = true;
+};
+
+// 设置保存后的回调
+const onSettingsSaved = (newConfig) => {
+  console.log('Settings saved:', newConfig);
+  // 这里可以添加刷新页面或其他操作
+};
 
 // User information
 const user = ref({
-  name: 'Admin User',
+  name: '管理员',
   avatar: '',
-  role: 'Administrator'
+  role: '系统管理员'
 });
-
-// Notifications count
-const notificationCount = ref(5);
-const messageCount = ref(3);
 
 // Search functionality
 const searchQuery = ref('');
@@ -23,7 +34,9 @@ const handleSearch = () => {
 // Dropdown handlers
 const handleCommand = (command) => {
   console.log('Command:', command);
-  if (command === 'logout') {
+  if (command === 'settings') {
+    openSettings();
+  } else if (command === 'logout') {
     console.log('Logging out...');
     // Add logout logic here
   }
@@ -33,79 +46,39 @@ const handleCommand = (command) => {
 <template>
   <div class="top-bar">
     <div class="left-section">
-      <div class="logo">
-        <h2>Admin System</h2>
-      </div>
-      <div class="nav-menu">
-        <ul>
-          <li class="active">Dashboard</li>
-          <li>Users</li>
-          <li>Settings</li>
-          <li>Reports</li>
-        </ul>
-      </div>
+      <h1 class="app-title">APISIX 管理系统</h1>
     </div>
-    
+
     <div class="right-section">
-      <div class="search-box">
-        <el-input
-          v-model="searchQuery"
-          placeholder="Search..."
-          :prefix-icon="Search"
-          @keyup.enter="handleSearch"
-        />
-      </div>
-      
-      <div class="notification-area">
-        <el-badge :value="notificationCount" class="notification-badge">
-          <el-dropdown trigger="click">
-            <span class="notification-icon">
-              <el-icon><Bell /></el-icon>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item>Notification 1</el-dropdown-item>
-                <el-dropdown-item>Notification 2</el-dropdown-item>
-                <el-dropdown-item>View All Notifications</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </el-badge>
-        
-        <el-badge :value="messageCount" class="message-badge">
-          <el-dropdown trigger="click">
-            <span class="message-icon">
-              <el-icon><Message /></el-icon>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item>Message 1</el-dropdown-item>
-                <el-dropdown-item>Message 2</el-dropdown-item>
-                <el-dropdown-item>View All Messages</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </el-badge>
-      </div>
-      
       <div class="user-profile">
-        <el-dropdown @command="handleCommand">
-          <span class="user-info">
-            <el-avatar :size="32" :src="user.avatar">{{ user.name.charAt(0) }}</el-avatar>
-            <span class="username">{{ user.name }}</span>
-          </span>
+        <el-dropdown @command="handleCommand" trigger="click">
+          <div class="user-info">
+            <el-avatar :size="36" :src="user.avatar" class="user-avatar">
+              {{ user.name.charAt(0) }}
+            </el-avatar>
+            <div class="user-details">
+              <span class="username">{{ user.name }}</span>
+              <span class="user-role">{{ user.role }}</span>
+            </div>
+          </div>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="profile">Profile</el-dropdown-item>
               <el-dropdown-item command="settings">
-                <el-icon><Setting /></el-icon> Settings
+                <el-icon><Setting /></el-icon>
+                系统设置
               </el-dropdown-item>
-              <el-dropdown-item divided command="logout">Logout</el-dropdown-item>
+              <el-dropdown-item divided command="logout">
+                <el-icon><SwitchButton /></el-icon>
+                退出登录
+              </el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
       </div>
     </div>
+
+    <!-- 设置对话框 -->
+    <SettingsDialog v-model:visible="settingsVisible" @saved="onSettingsSaved" />
   </div>
 </template>
 
@@ -114,95 +87,28 @@ const handleCommand = (command) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 60px;
-  background-color: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
   padding: 0 20px;
-  width: 100%;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 1000;
-}
-
-.left-section {
-  display: flex;
-  align-items: center;
-}
-
-.logo {
-  margin-right: 40px;
-}
-
-.logo h2 {
-  margin: 0;
-  color: #409EFF;
-  font-size: 1.5rem;
-}
-
-.nav-menu ul {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-menu li {
-  margin-right: 20px;
-  padding: 0 10px;
-  cursor: pointer;
-  font-size: 14px;
-  height: 60px;
-  line-height: 60px;
-  transition: all 0.3s;
-}
-
-.nav-menu li:hover {
-  color: #409EFF;
-}
-
-.nav-menu li.active {
-  color: #409EFF;
-  border-bottom: 2px solid #409EFF;
-}
-
-.right-section {
-  display: flex;
-  align-items: center;
-}
-
-.search-box {
-  margin-right: 20px;
-  width: 200px;
-}
-
-.notification-area {
-  display: flex;
-  margin-right: 20px;
-}
-
-.notification-badge,
-.message-badge {
-  margin-right: 15px;
-  cursor: pointer;
-}
-
-.notification-icon,
-.message-icon {
-  font-size: 20px;
-  color: #606266;
-}
-
-.user-profile {
-  cursor: pointer;
 }
 
 .user-info {
   display: flex;
   align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
 }
 
-.username {
-  margin-left: 8px;
-  font-size: 14px;
+.user-info:hover {
+  background: #f5f5f5;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
 }
 </style>

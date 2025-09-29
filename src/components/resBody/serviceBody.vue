@@ -1,6 +1,6 @@
 <template>
-    <div class="route-form-container">
-        <el-form :model="formData" label-width="120px" ref="formRef">
+    <div class="form-container">
+        <el-form :model="formData" label-width="140px" ref="formRef">
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
@@ -20,7 +20,7 @@
                     </el-col>
                 </el-row>
 
-                <el-form-item label="服务ID" prop="upstream_id">
+                <el-form-item label="服务ID" prop="id">
                     <el-input v-model="formData.id" placeholder="请输入服务ID" />
                 </el-form-item>
 
@@ -44,9 +44,9 @@
                     <span class="section-title">标签配置</span>
                 </template>
 
-                <el-form-item label="labels" prop="labels">
-                    <key-value-input @send-data="updateLabels" v-model="formData.labels" key-placeholder="Key"
-                        value-placeholder="Value" />
+                <el-form-item label="标签" prop="labels">
+                    <key-value-input @send-data="updateLabels" v-model="formData.labels" key-placeholder="键"
+                        value-placeholder="值" />
                 </el-form-item>
             </el-card>
 
@@ -56,7 +56,7 @@
                     <span class="section-title">插件配置</span>
                 </template>
 
-                <el-form-item label="plugins" prop="plugins">
+                <el-form-item label="插件配置" prop="plugins">
                     <el-button type="primary" size="small" @click="addPlugin">添加插件</el-button>
                     <div v-for="(plugin, index) in pluginsList" :key="index" class="plugin-item">
                         <el-row :gutter="10">
@@ -95,10 +95,11 @@
                 </el-form-item>
 
                 <!-- 上游ID配置 -->
-                <el-form-item v-if="upstreamType === 'id'" label="upstream_id" prop="upstream_id">
-                    <el-select v-model="formData.upstream_id" filterable placeholder="选择上游ID">
+                <el-form-item v-if="upstreamType === 'id'" label="上游ID" prop="upstream_id">
+                    <el-select v-model="formData.upstream_id" filterable placeholder="选择上游ID" 
+                        @focus="ensureUpstreamList" :loading="upstreamLoading">
                         <el-option v-for="item in upstreamList" :key="item.id"
-                            :label="item.id + (item.name ? ' (' + item.name + ')' : '')" :value="item.id">
+                            :label="item.name || item.id" :value="item.id">
                         </el-option>
                     </el-select>
                     <span class="form-item-tip">从现有上游中选择</span>
@@ -106,47 +107,47 @@
 
                 <!-- 内联上游配置 -->
                 <template v-if="upstreamType === 'inline'">
-                    <el-form-item label="type" prop="upstream.type">
+                    <el-form-item label="负载均衡类型" prop="upstream.type">
                         <el-select v-model="formData.upstream.type" placeholder="选择负载均衡算法">
-                            <el-option label="roundrobin" value="roundrobin" />
-                            <el-option label="chash" value="chash" />
-                            <el-option label="least_conn" value="least_conn" />
+                            <el-option label="轮询" value="roundrobin" />
+                            <el-option label="一致性哈希" value="chash" />
+                            <el-option label="最少连接" value="least_conn" />
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="scheme" prop="upstream.scheme">
+                    <el-form-item label="协议类型" prop="upstream.scheme">
                         <el-select v-model="formData.upstream.scheme" placeholder="选择协议">
-                            <el-option label="http" value="http" />
-                            <el-option label="https" value="https" />
-                            <el-option label="grpc" value="grpc" />
-                            <el-option label="grpcs" value="grpcs" />
+                            <el-option label="HTTP" value="http" />
+                            <el-option label="HTTPS" value="https" />
+                            <el-option label="gRPC" value="grpc" />
+                            <el-option label="gRPCs" value="grpcs" />
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="pass_host" prop="upstream.pass_host">
+                    <el-form-item label="主机传递" prop="upstream.pass_host">
                         <el-select v-model="formData.upstream.pass_host" placeholder="选择主机传递方式">
-                            <el-option label="pass" value="pass" />
-                            <el-option label="node" value="node" />
-                            <el-option label="rewrite" value="rewrite" />
+                            <el-option label="透传" value="pass" />
+                            <el-option label="节点" value="node" />
+                            <el-option label="重写" value="rewrite" />
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item v-if="formData.upstream.pass_host === 'rewrite'" label="upstream_host"
+                    <el-form-item v-if="formData.upstream.pass_host === 'rewrite'" label="上游主机"
                         prop="upstream.upstream_host">
                         <el-input v-model="formData.upstream.upstream_host" placeholder="请输入主机名" />
                     </el-form-item>
 
-                    <el-form-item label="hash_on" prop="upstream.hash_on" v-if="formData.upstream.type === 'chash'">
+                    <el-form-item label="哈希类型" prop="upstream.hash_on" v-if="formData.upstream.type === 'chash'">
                         <el-select v-model="formData.upstream.hash_on" placeholder="选择哈希类型">
-                            <el-option label="vars" value="vars" />
-                            <el-option label="header" value="header" />
-                            <el-option label="cookie" value="cookie" />
-                            <el-option label="consumer" value="consumer" />
-                            <el-option label="ip" value="ip" />
+                            <el-option label="变量" value="vars" />
+                            <el-option label="请求头" value="header" />
+                            <el-option label="Cookie" value="cookie" />
+                            <el-option label="消费者" value="consumer" />
+                            <el-option label="IP地址" value="ip" />
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="key" prop="upstream.key"
+                    <el-form-item label="哈希键" prop="upstream.key"
                         v-if="formData.upstream.type === 'chash' && formData.upstream.hash_on">
                         <el-input v-model="formData.upstream.key"
                             :placeholder="getKeyPlaceholder(formData.upstream.hash_on)" />
@@ -154,7 +155,7 @@
 
                     <el-divider content-position="left">节点配置</el-divider>
 
-                    <el-form-item label="nodes" prop="upstream.nodes">
+                    <el-form-item label="节点配置" prop="upstream.nodes">
                         <key-value-input @send-data="updateNodes" v-model="formData.upstream.nodes"
                             key-placeholder="节点地址 (例如: 127.0.0.1:1980)" value-placeholder="权重 (例如: 1)" />
                     </el-form-item>
@@ -232,6 +233,7 @@ const upstreamType = ref("inline");
 
 // 上游列表
 const upstreamList = ref([]);
+const upstreamLoading = ref(false);
 
 // 插件列表
 const pluginsList = ref([]);
@@ -296,7 +298,7 @@ const processPlugins = () => {
             try {
                 formData.plugins[plugin.name] = JSON.parse(plugin.config);
             } catch (e) {
-                ElMessage.error(`Plugin ${plugin.name} configuration is not valid JSON format`);
+                ElMessage.error(`插件 ${plugin.name} 配置不是有效的JSON格式`);
                 return false;
             }
         }
@@ -334,21 +336,33 @@ const props = defineProps({
 
 // 获取上游列表
 const fetchUpstreams = () => {
+    upstreamLoading.value = true;
     getUpstreams().then(res => {
         if (res.data && res.data.list) {
             upstreamList.value = res.data.list.map(item => ({
                 id: item.value.id || item.id,
-                name: item.value.name || ''
+                name: item.value.name || item.value.desc || `上游-${item.value.id || item.id}`
             }));
         }
     }).catch(err => {
-        ElMessage.error('Failed to fetch upstream list: ' + err.message);
+        ElMessage.error('获取上游列表失败: ' + err.message);
+    }).finally(() => {
+        upstreamLoading.value = false;
     });
 };
 
-// 组件挂载时获取上游列表
-onMounted(() => {
-    fetchUpstreams();
+// 当需要上游列表时才获取
+const ensureUpstreamList = () => {
+    if (upstreamList.value.length === 0) {
+        fetchUpstreams();
+    }
+};
+
+// 监听上游类型变化，按需加载数据
+watch(() => upstreamType.value, (newType) => {
+    if (newType === 'id') {
+        ensureUpstreamList();
+    }
 });
 
 watch(() => props.patch, (newValue) => {
@@ -448,36 +462,5 @@ const resetForm = () => {
 </script>
 
 <style scoped>
-.route-form-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.form-section {
-    margin-bottom: 20px;
-}
-
-.section-title {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.form-actions {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.plugin-item {
-    margin-bottom: 15px;
-    padding: 15px;
-    border: 1px dashed #dcdfe6;
-    border-radius: 4px;
-}
-
-.form-item-tip {
-    margin-left: 10px;
-    color: #909399;
-    font-size: 12px;
-}
+/* 使用全局统一样式，无需额外CSS */
 </style>

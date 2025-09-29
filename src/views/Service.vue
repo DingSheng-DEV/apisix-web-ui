@@ -135,23 +135,23 @@ const onSubmit = () => {
             <el-card style="margin-top: 10px;max-height: calc(-240px + 100vh);overflow: auto;">
                 <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
-                    <el-table-column prop="id" label="id" />
-                    <el-table-column prop="name" label="name" />
-                    <el-table-column prop="enable_websocket" label="enable_websocket" />
-                    <el-table-column prop="scheme" label="scheme" />
-                    <el-table-column prop="hash_on" label="hash_on" />
-                    <el-table-column prop="type" label="type" />
-                    <el-table-column label="Operations">
+                    <el-table-column prop="id" label="ID" />
+                    <el-table-column prop="name" label="名称" />
+                    <el-table-column prop="enable_websocket" label="WebSocket" />
+                    <el-table-column prop="scheme" label="协议" />
+                    <el-table-column prop="hash_on" label="哈希类型" />
+                    <el-table-column prop="type" label="负载均衡" />
+                    <el-table-column label="操作">
                         <template #default="scope">
-                            <el-button link type="primary" size="small" @click="handleDelete(scope)">Delete</el-button>
-                            <el-button link type="primary" size="small" @click="handlePatch(scope)">Patch</el-button>
+                            <el-button link type="danger" size="small" @click="handleDelete(scope)">删除</el-button>
+                            <el-button link type="primary" size="small" @click="handlePatch(scope)">编辑</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
             </el-card>
         </div>
 
-        <el-dialog v-model="dialogVisible" title="Parms" :before-close="handleClose">
+        <el-dialog v-model="dialogVisible" title="参数配置" :before-close="handleClose">
             <ServiceBody :patch="patch" :total="total"></ServiceBody>
         </el-dialog>
     </div>

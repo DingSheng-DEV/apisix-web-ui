@@ -1,36 +1,42 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
+import WorkSpace from "@/views/WorkSpace.vue";
+import Router from "@/views/Router.vue";
+import Service from "@/views/Service.vue";
+import Upstream from "@/views/Upstream.vue";
+import SSL from "@/views/SSL.vue";
+import GlobalRules from "@/views/global_rules.vue";
 
 const routes = [
   {
     path: "/",
     redirect: "/Router",
     name: "Workspace",
-    component: import("@/views/Workspace.vue"),
+    component: WorkSpace,
     children: [
       {
         path: "/Router",
         name: "Router",
-        component: import("@/views/Router.vue"),
+        component: Router,
       },
       {
         path: "/Service",
         name: "Service",
-        component: import("@/views/Service.vue"),
+        component: Service,
       },
       {
         path: "/Upstream",
         name: "Upstream",
-        component: import("@/views/Upstream.vue"),
+        component: Upstream,
       },
       {
         path: "/SSL",
         name: "SSL",
-        component: import("@/views/SSl.vue"),
+        component: SSL,
       },
       {
         path: "/global_rules",
         name: "global_rules",
-        component: import("@/views/global_rules.vue"),
+        component: GlobalRules,
       },
       // {
       //   path: "/ll",
@@ -42,7 +48,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes,
 });
 

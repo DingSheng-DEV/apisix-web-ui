@@ -123,30 +123,30 @@ const onSubmit = () => {
         ">
                 <el-empty description="数据暂无" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
-                    <el-table-column prop="id" label="id" />
-                    <el-table-column prop="cert" label="cert" width="350">
+                    <el-table-column prop="id" label="ID" />
+                    <el-table-column prop="cert" label="证书" width="350">
                         <template #default="scope">
                             <div class="truncated-text">{{ scope.row.cert }}</div>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="key" label="key" width="350">
+                    <el-table-column prop="key" label="私钥" width="350">
                         <template #default="scope">
                             <div class="truncated-text">{{ scope.row.key }}</div>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="type" label="type" />
-                    <el-table-column prop="snis" label="snis" />
-                    <el-table-column label="Operations">
+                    <el-table-column prop="type" label="类型" />
+                    <el-table-column prop="snis" label="域名" />
+                    <el-table-column label="操作">
                         <template #default="scope">
-                            <el-button link type="primary" size="small" @click="handleDelete(scope)">Delete</el-button>
-                            <el-button link type="primary" size="small" @click="handlePatch(scope)">Patch</el-button>
+                            <el-button link type="danger" size="small" @click="handleDelete(scope)">删除</el-button>
+                            <el-button link type="primary" size="small" @click="handlePatch(scope)">编辑</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
             </el-card>
         </div>
 
-        <el-dialog v-model="dialogVisible" title="Parms" @close="handleClose">
+        <el-dialog v-model="dialogVisible" title="参数配置" @close="handleClose">
             <SSLBody :patch="patch"></SSLBody>
         </el-dialog>
     </div>
