@@ -1,8 +1,11 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { ElDropdown, ElDropdownMenu, ElDropdownItem, ElInput, ElAvatar, ElIcon } from 'element-plus';
 import { Search, Setting, User, SwitchButton } from '@element-plus/icons-vue';
 import SettingsDialog from '@/components/Settings/SettingsDialog.vue';
+import { useI18nUtils } from '@/utils/i18n.js';
+
+const { t } = useI18nUtils();
 
 // 设置对话框可见性
 const settingsVisible = ref(false);
@@ -18,12 +21,10 @@ const onSettingsSaved = (newConfig) => {
   // 这里可以添加刷新页面或其他操作
 };
 
-// User information
-const user = ref({
-  name: '管理员',
-  avatar: '',
-  role: '系统管理员'
-});
+// User information - 使用computed属性
+const userName = computed(() => t('common.admin'))
+const userRole = computed(() => t('common.systemAdmin'))
+const userAvatar = ref('')
 
 // Search functionality
 const searchQuery = ref('');
@@ -46,31 +47,31 @@ const handleCommand = (command) => {
 <template>
   <div class="top-bar">
     <div class="left-section">
-      <h1 class="app-title">APISIX 管理系统</h1>
+      <h1 class="app-title">{{ t('common.appTitle') }}</h1>
     </div>
 
     <div class="right-section">
       <div class="user-profile">
         <el-dropdown @command="handleCommand" trigger="click">
           <div class="user-info">
-            <el-avatar :size="36" :src="user.avatar" class="user-avatar">
-              {{ user.name.charAt(0) }}
+            <el-avatar :size="36" :src="userAvatar" class="user-avatar">
+              {{ userName.charAt(0) }}
             </el-avatar>
             <div class="user-details">
-              <span class="username">{{ user.name }}</span>
-              <span class="user-role">{{ user.role }}</span>
+              <span class="username">{{ userName }}</span>
+              <span class="user-role">{{ userRole }}</span>
             </div>
           </div>
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item command="settings">
                 <el-icon><Setting /></el-icon>
-                系统设置
+                {{ t('nav.settings') }}
               </el-dropdown-item>
-              <el-dropdown-item divided command="logout">
+              <!-- <el-dropdown-item divided command="logout">
                 <el-icon><SwitchButton /></el-icon>
-                退出登录
-              </el-dropdown-item>
+                {{ t('nav.logout') }}
+              </el-dropdown-item> -->
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -93,16 +94,43 @@ const handleCommand = (command) => {
   padding: 0 20px;
 }
 
+.right-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+
 .user-info {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 4px 8px;
+  border-radius: 6px;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .user-info:hover {
   background: #f5f5f5;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.user-role {
+  font-size: 12px;
+  color: #909399;
 }
 
 .app-title {

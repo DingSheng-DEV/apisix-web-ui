@@ -2,9 +2,11 @@
 import { ElEmpty, ElTable, ElTableColumn, ElButton } from "element-plus";
 import { ref, inject, watch, onMounted } from "vue";
 import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
+import { useI18nUtils } from '@/utils/i18n.js';
 let tableList = ref([])
 let apiType = inject('apiType');
 let empty = ref(false);
+const { t } = useI18nUtils();
 watch(apiType, (newValue) => {
 
 });
@@ -93,17 +95,17 @@ onMounted(() => [
 
 <template>
     <div>
-        <el-empty description="数据暂无" v-if="empty" />
+        <el-empty :description="t('messages.noData')" v-if="empty" />
         <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
-            <el-table-column prop="uri" label="uri" />
-            <el-table-column prop="id" label="id" />
-            <el-table-column prop="hosts" label="hosts" />
-            <el-table-column prop="methods" label="methods" />
-            <el-table-column prop="remote_addrs" label="remote_addrs" />
-            <el-table-column label="Operations">
+            <el-table-column prop="uri" :label="t('table.uri')" />
+            <el-table-column prop="id" :label="t('table.id')" />
+            <el-table-column prop="hosts" :label="t('table.hosts')" />
+            <el-table-column prop="methods" :label="t('table.methods')" />
+            <el-table-column prop="remote_addrs" :label="t('table.remoteAddrs')" />
+            <el-table-column :label="t('table.actions')">
                 <template #default="scope">
-                    <el-button link type="primary" size="small" @click="handleDelete(scope)">Delete</el-button>
-                    <el-button link type="primary" size="small" @click="handlePatch(scope)">Patch</el-button>
+                    <el-button link type="primary" size="small" @click="handleDelete(scope)">{{ t('common.delete') }}</el-button>
+                    <el-button link type="primary" size="small" @click="handlePatch(scope)">{{ t('common.edit') }}</el-button>
                 </template>
             </el-table-column>
         </el-table>

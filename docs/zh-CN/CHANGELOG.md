@@ -1,7 +1,5 @@
 # 更新日志
 
-[![中文](https://img.shields.io/badge/lang-中文-red.svg)](docs/zh-CN/CHANGELOG.md) [![English](https://img.shields.io/badge/lang-English-blue.svg)](docs/en/CHANGELOG.md)
-
 本项目的所有重要更改都将记录在此文件中。
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)，

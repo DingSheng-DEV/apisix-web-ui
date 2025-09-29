@@ -1,7 +1,5 @@
 # 贡献者公约行为准则
 
-[![中文](https://img.shields.io/badge/lang-中文-red.svg)](docs/zh-CN/CODE_OF_CONDUCT.md) [![English](https://img.shields.io/badge/lang-English-blue.svg)](docs/en/CODE_OF_CONDUCT.md)
-
 ## 我们的承诺
 
 作为成员、贡献者和领导者，我们承诺让参与我们社区的每个人都能够获得无骚扰的体验，无论其年龄、体型、明显或隐藏的残疾、种族、性特征、性别认同与表达、经验水平、教育背景、社会经济地位、国籍、外貌、种族、宗教或性取向如何。

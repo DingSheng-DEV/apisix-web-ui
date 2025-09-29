@@ -4,30 +4,30 @@
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">基本信息</span>
+                    <span class="section-title">{{ t('form.basicInfo') }}</span>
                 </template>
 
                 <el-row :gutter="20">
                     <el-col :span="12">
-                        <el-form-item label="路由名称" prop="name">
-                            <el-input v-model="formData.name" placeholder="请输入路由名称" />
+                        <el-form-item :label="t('routes.name')" prop="name">
+                            <el-input v-model="formData.name" :placeholder="t('form.enterRouteName')" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="路由描述" prop="desc">
-                            <el-input v-model="formData.desc" placeholder="请输入路由描述" />
+                        <el-form-item :label="t('form.routeDescLabel')" prop="desc">
+                            <el-input v-model="formData.desc" :placeholder="t('form.enterRouteDesc')" />
                         </el-form-item>
                     </el-col>
                 </el-row>
 
-                <el-form-item label="状态" prop="status">
+                <el-form-item :label="t('routes.status')" prop="status">
                     <el-radio-group v-model="formData.status">
-                        <el-radio :label="1">启用</el-radio>
-                        <el-radio :label="0">禁用</el-radio>
+                        <el-radio :label="1">{{ t('routes.enabled') }}</el-radio>
+                        <el-radio :label="0">{{ t('routes.disabled') }}</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
-                <el-form-item label="启用WebSocket" prop="enable_websocket">
+                <el-form-item :label="t('form.enableWebsocket')" prop="enable_websocket">
                     <el-switch v-model="formData.enable_websocket" />
                 </el-form-item>
             </el-card>
@@ -35,51 +35,51 @@
             <!-- URI配置部分 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">URI配置(必填)</span>
+                    <span class="section-title">{{ t('form.uriConfig') }}</span>
                 </template>
 
                 <!-- URI/URIs 选择 -->
-                <el-form-item label="URI类型">
+                <el-form-item :label="t('form.uriType')">
                     <el-radio-group v-model="uriType" @change="handleUriTypeChange">
-                        <el-radio label="single">单个URI</el-radio>
-                        <el-radio label="multiple">多个URI</el-radio>
+                        <el-radio label="single">{{ t('form.singleUri') }}</el-radio>
+                        <el-radio label="multiple">{{ t('form.multipleUris') }}</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
-                <el-form-item v-if="uriType === 'single'" label="URI" prop="uri">
-                    <el-input v-model="formData.uri" placeholder="例如: /api/v1" />
+                <el-form-item v-if="uriType === 'single'" :label="t('table.uri')" prop="uri">
+                    <el-input v-model="formData.uri" :placeholder="t('form.uriPlaceholder')" />
                 </el-form-item>
 
-                <array-input v-if="uriType === 'multiple'" v-model="formData.uris" label="URI列表"
-                    placeholder="例如: /api/v1" />
+                <array-input v-if="uriType === 'multiple'" v-model="formData.uris" :label="t('form.uriList')"
+                    :placeholder="t('form.uriPlaceholder')" />
 
                 <!-- Host/Hosts 选择 -->
-                <el-form-item label="Host (可选)" prop="host">
-                    <el-input v-model="formData.host" placeholder="例如: example.com (留空表示匹配所有)" />
-                    <span class="form-item-tip">指定域名匹配，留空则匹配所有域名</span>
+                <el-form-item :label="t('form.hostOptional')" prop="host">
+                    <el-input v-model="formData.host" :placeholder="t('form.hostPlaceholder')" />
+                    <span class="form-item-tip">{{ t('tips.hostMatch') }}</span>
                 </el-form-item>
 
                 <!-- HTTP方法 -->
-                <array-input v-model="formData.methods" label="HTTP方法" placeholder="例如: GET" :options="httpMethods" />
+                <array-input v-model="formData.methods" :label="t('routes.methods')" :placeholder="t('form.httpMethodPlaceholder')" :options="httpMethods" />
             </el-card>
 
             <!-- 高级匹配规则 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">高级匹配规则 (可选)</span>
+                    <span class="section-title">{{ t('form.advancedMatch') }}</span>
                 </template>
 
                 <!-- vars 变量匹配 -->
-                <el-form-item label="变量匹配规则" prop="vars">
+                <el-form-item :label="t('form.varMatchRules')" prop="vars">
                     <div style="width: 100%;"><el-button type="primary" size="small"
-                            @click="addVarRule">添加变量规则</el-button></div>
+                            @click="addVarRule">{{ t('form.addVarRule') }}</el-button></div>
                     <div v-for="(rule, index) in formData.vars" :key="index" class="var-rule-item">
                         <el-row :gutter="10">
                             <el-col :span="7">
-                                <el-input v-model="rule[0]" placeholder="变量名 (如: http_user)" />
+                                <el-input v-model="rule[0]" :placeholder="t('form.variableNamePlaceholder')" />
                             </el-col>
                             <el-col :span="5">
-                                <el-select v-model="rule[1]" placeholder="操作符">
+                                <el-select v-model="rule[1]" :placeholder="t('form.operator')">
                                     <el-option label="==" value="==" />
                                     <el-option label="~=" value="~=" />
                                     <el-option label=">" value=">" />
@@ -90,65 +90,65 @@
                                 </el-select>
                             </el-col>
                             <el-col :span="7">
-                                <el-input v-model="rule[2]" placeholder="值 (如: ios)" />
+                                <el-input v-model="rule[2]" :placeholder="t('form.valuePlaceholder')" />
                             </el-col>
                             <el-col :span="3">
-                                <el-button type="danger" size="small" @click="removeVarRule(index)">删除</el-button>
+                                <el-button type="danger" size="small" @click="removeVarRule(index)">{{ t('common.delete') }}</el-button>
                             </el-col>
                         </el-row>
                     </div>
                 </el-form-item>
 
                 <!-- filter_func 过滤函数 -->
-                <el-form-item label="过滤函数" prop="filter_func">
+                <el-form-item :label="t('form.filterFunc')" prop="filter_func">
                     <el-input v-model="formData.filter_func" type="textarea" :rows="3"
-                        placeholder="例如: function(vars) return tonumber(vars.arg_userid) % 4 > 2; end" />
+                        :placeholder="t('form.filterFuncPlaceholder')" />
                 </el-form-item>
 
                 <!-- 标签 -->
-                <el-form-item label="标签" prop="labels">
-                    <key-value-input @send-data="updateLabels" v-model="formData.labels" key-placeholder="标签键"
-                        value-placeholder="标签值" />
+                <el-form-item :label="t('form.labels')" prop="labels">
+                    <key-value-input @send-data="updateLabels" v-model="formData.labels" :key-placeholder="t('form.keyPlaceholder')"
+                        :value-placeholder="t('form.valuePlaceholder')" />
                 </el-form-item>
             </el-card>
 
             <!-- 上游服务配置 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">上游服务配置</span>
+                    <span class="section-title">{{ t('form.upstreamConfig') }}</span>
                 </template>
 
                 <!-- 上游配置类型选择 -->
-                <el-form-item label="上游配置方式">
+                <el-form-item :label="t('form.upstreamType')">
                     <el-radio-group v-model="upstreamType">
-                        <el-radio label="id">使用upstream_id</el-radio>
-                        <el-radio label="inline">内联upstream</el-radio>
+                        <el-radio label="id">{{ t('form.useUpstreamId') }}</el-radio>
+                        <el-radio label="inline">{{ t('form.inlineUpstream') }}</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
                 <!-- 上游ID配置 -->
-                <el-form-item v-if="upstreamType === 'id'" label="上游ID" prop="upstream_id">
-                    <el-select v-model="formData.upstream_id" filterable placeholder="选择上游ID" 
+                <el-form-item v-if="upstreamType === 'id'" :label="t('form.upstreamId')" prop="upstream_id">
+                    <el-select v-model="formData.upstream_id" filterable :placeholder="t('form.selectUpstreamId')" 
                         @focus="ensureUpstreamList" :loading="upstreamLoading">
                         <el-option v-for="item in upstreamList" :key="item.id" 
                             :label="item.name || item.id" :value="item.id">
                         </el-option>
                     </el-select>
-                    <span class="form-item-tip">从现有上游中选择</span>
+                    <span class="form-item-tip">{{ t('form.chooseFromExistingUpstreams') }}</span>
                 </el-form-item>
 
                 <!-- 内联上游配置 -->
                 <template v-if="upstreamType === 'inline'">
-                    <el-form-item label="负载均衡类型" prop="upstream.type">
-                        <el-select v-model="formData.upstream.type" placeholder="请选择负载均衡类型">
-                            <el-option label="轮询" value="roundrobin" />
-                            <el-option label="一致性哈希" value="chash" />
-                            <el-option label="最少连接" value="least_conn" />
+                    <el-form-item :label="t('form.loadBalanceType')" prop="upstream.type">
+                        <el-select v-model="formData.upstream.type" :placeholder="t('form.selectLoadBalanceType')">
+                            <el-option :label="t('upstreams.roundrobin')" value="roundrobin" />
+                            <el-option :label="t('upstreams.chash')" value="chash" />
+                            <el-option :label="t('upstreams.leastConn')" value="least_conn" />
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="协议类型" prop="upstream.scheme">
-                        <el-select v-model="formData.upstream.scheme" placeholder="请选择协议类型">
+                    <el-form-item :label="t('form.protocolType')" prop="upstream.scheme">
+                        <el-select v-model="formData.upstream.scheme" :placeholder="t('form.selectProtocol')">
                             <el-option label="HTTP" value="http" />
                             <el-option label="HTTPS" value="https" />
                             <el-option label="GRPC" value="grpc" />
@@ -156,88 +156,88 @@
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="节点配置" prop="upstream.nodes">
+                    <el-form-item :label="t('form.nodes')" prop="upstream.nodes">
                         <key-value-input @send-data="changeNodes" v-model="formData.upstream.nodes"
-                            key-placeholder="节点地址 (如: 127.0.0.1:1980)" value-placeholder="权重 (如: 1)" />
+                            :key-placeholder="t('form.nodesKeyPlaceholder')" :value-placeholder="t('form.nodesValPlaceholder')" />
                     </el-form-item>
                 </template>
 
                 <!-- 服务ID配置 -->
-                <el-form-item label="服务ID" prop="service_id">
-                    <el-select v-model="formData.service_id" filterable placeholder="选择服务ID" 
+                <el-form-item :label="t('form.serviceId')" prop="service_id">
+                    <el-select v-model="formData.service_id" filterable :placeholder="t('form.selectServiceId')" 
                         @focus="onServiceSelectFocus" :loading="serviceLoading">
                         <el-option v-for="item in serviceList" :key="item.id" 
                             :label="item.name || item.id" :value="item.id">
                         </el-option>
                     </el-select>
-                    <span class="form-item-tip">从现有服务中选择</span>
+                    <span class="form-item-tip">{{ t('form.chooseFromExistingServices') }}</span>
                 </el-form-item>
 
 
 
                 <!-- 超时配置 -->
-                <el-form-item label="超时配置">
-                    <el-row :gutter="10">
-                        <el-col :span="8">
-                            <el-form-item label="连接超时">
-                                <el-input-number v-model="formData.timeout.connect" :min="0" :step="1"
-                                    placeholder="秒" />
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="8">
-                            <el-form-item label="发送超时">
-                                <el-input-number v-model="formData.timeout.send" :min="0" :step="1" placeholder="秒" />
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="8">
-                            <el-form-item label="读取超时">
-                                <el-input-number v-model="formData.timeout.read" :min="0" :step="1" placeholder="秒" />
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                </el-form-item>
+                <el-row :gutter="20">
+                    <el-col :span="8">
+                        <el-form-item :label="t('form.connectTimeout')" prop="timeout.connect">
+                            <el-input-number v-model="formData.timeout.connect" :min="0" :step="1" 
+                                controls-position="right" style="width: 100%;" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="8">
+                        <el-form-item :label="t('form.sendTimeout')" prop="timeout.send">
+                            <el-input-number v-model="formData.timeout.send" :min="0" :step="1" 
+                                controls-position="right" style="width: 100%;" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="8">
+                        <el-form-item :label="t('form.readTimeout')" prop="timeout.read">
+                            <el-input-number v-model="formData.timeout.read" :min="0" :step="1" 
+                                controls-position="right" style="width: 100%;" />
+                        </el-form-item>
+                    </el-col>
+                </el-row>
             </el-card>
 
             <!-- 插件配置 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">插件配置</span>
+                    <span class="section-title">{{ t('plugins.title') }}</span>
                 </template>
 
                 <!-- 插件配置类型选择 -->
-                <el-form-item label="插件配置方式">
+                <el-form-item :label="t('form.pluginType')">
                     <el-radio-group v-model="pluginType" @change="handlePluginTypeChange">
-                        <el-radio label="config_id">使用插件配置ID</el-radio>
-                        <el-radio label="inline">内联插件</el-radio>
+                        <el-radio label="config_id">{{ t('form.usePluginConfigId') }}</el-radio>
+                        <el-radio label="inline">{{ t('form.inlinePlugin') }}</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
                 <!-- 插件配置ID -->
-                <el-form-item v-if="pluginType === 'config_id'" label="插件配置ID" prop="plugin_config_id">
-                    <el-input v-model="formData.plugin_config_id" placeholder="请输入插件配置ID" />
-                    <span class="form-item-tip">使用已存在的插件配置ID</span>
+                <el-form-item v-if="pluginType === 'config_id'" :label="t('form.pluginConfigId')" prop="plugin_config_id">
+                    <el-input v-model="formData.plugin_config_id" :placeholder="t('form.pluginConfigIdPlaceholder')" />
+                    <span class="form-item-tip">{{ t('tips.useExistingPluginConfigId') }}</span>
                 </el-form-item>
 
                 <!-- 内联插件配置 -->
                 <template v-if="pluginType === 'inline'">
-                    <el-form-item label="插件配置" prop="plugins">
+                    <el-form-item :label="t('form.pluginConfigLabel')" prop="plugins">
                         <div style="width: 100%;">
-                            <el-button type="primary" size="small" @click="addPlugin">添加插件</el-button>
+                            <el-button type="primary" size="small" @click="addPlugin">{{ t('common.add') }}</el-button>
                         </div>
                         <div v-for="(plugin, index) in pluginsList" :key="index" class="plugin-item">
-                            <el-row :gutter="10">
-                                <el-col :span="6">
-                                    <el-select v-model="plugin.name" placeholder="选择插件" filterable>
+                            <el-row :gutter="12" style="align-items: flex-start;">
+                                <el-col :span="5">
+                                    <el-select v-model="plugin.name" :placeholder="t('form.selectPlugin')" filterable>
                                         <el-option v-for="item in availablePlugins" :key="item" :label="item"
                                             :value="item" />
                                     </el-select>
                                 </el-col>
-                                <el-col :span="15">
+                                <el-col :span="17">
                                     <el-input v-model="plugin.config" type="textarea" :rows="3"
-                                        placeholder="插件配置 (JSON格式)" />
+                                        :placeholder="t('form.pluginConfigPlaceholder')" />
                                 </el-col>
-                                <el-col :span="3">
-                                    <el-button type="danger" size="small" @click="removePlugin(index)">删除</el-button>
+                                <el-col :span="2">
+                                    <el-button type="danger" text @click="removePlugin(index)" :icon="Delete" />
                                 </el-col>
                             </el-row>
                         </div>
@@ -248,25 +248,25 @@
             <!-- 脚本配置 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">脚本与优先级配置</span>
+                    <span class="section-title">{{ t('form.scriptPriorityTitle') }}</span>
                 </template>
 
-                <el-form-item label="优先级" prop="priority">
-                    <el-input-number v-model="formData.priority" :min="0" />
-                    <span class="form-item-tip">当不同路由包含相同URI时，根据优先级确定匹配顺序，值越大优先级越高</span>
+                <el-form-item :label="t('form.priority')" prop="priority">
+                    <el-input-number v-model="formData.priority" :min="0" controls-position="right" style="width: 100%;" />
+                    <span class="form-item-tip">{{ t('tips.priority') }}</span>
                 </el-form-item>
 
-                <el-form-item label="路由脚本" prop="script">
+                <el-form-item :label="t('form.routeScript')" prop="script">
                     <el-input v-model="formData.script" type="textarea" :rows="5"
-                        placeholder="请输入路由脚本代码，用于编写任意Lua代码或直接调用现有插件" :disabled="pluginType === 'config_id'" />
-                    <div class="form-item-tip">注意：script 与 plugin_config_id 不能同时使用</div>
+                        :placeholder="t('form.routeScriptPlaceholder')" :disabled="pluginType === 'config_id'" />
+                    <div class="form-item-tip">{{ t('tips.scriptNote') }}</div>
                 </el-form-item>
             </el-card>
 
             <!-- 表单操作 -->
             <div class="form-actions">
-                <el-button type="primary" @click="submitForm">提交</el-button>
-                <el-button @click="resetForm">重置</el-button>
+                <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+                <el-button @click="resetForm">{{ t('common.reset') }}</el-button>
             </div>
         </el-form>
     </div>
@@ -298,12 +298,14 @@ import {
     ElRow,
     ElCol,
 } from "element-plus";
+import { Delete } from '@element-plus/icons-vue';
 
 // 导入自定义组件
 import ArrayInput from "@/components/ArrayInput.vue";
 import KeyValueInput from "@/components/KeyValueInput.vue";
 import { createRouters, PatchRouters, getRouterById, getUpstreams, getServices } from "@/api/index.js";
 import { getNonEmptyValues } from "@/utils/index.js";
+import { useI18nUtils } from '@/utils/i18n.js';
 
 // 初始表单数据
 const initialFormData = {
@@ -346,6 +348,17 @@ const formData = reactive(JSON.parse(JSON.stringify(initialFormData)));
 
 // 表单引用
 const formRef = ref();
+const { t } = useI18nUtils();
+
+// 表单验证规则
+const rules = {
+    uri: [
+        { required: true, message: t('validation.required'), trigger: 'blur' }
+    ],
+    name: [
+        { required: true, message: t('validation.required'), trigger: 'blur' }
+    ]
+};
 
 // 二选一参数的类型选择
 const uriType = ref("multiple");
@@ -705,5 +718,16 @@ const resetForm = () => {
 </script>
 
 <style scoped>
-/* 使用全局统一样式，无需额外CSS */
+.plugin-item {
+    margin-bottom: 12px;
+    padding: 12px;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    background-color: #fafafa;
+}
+
+.plugin-item:hover {
+    border-color: #409eff;
+    background-color: #f0f9ff;
+}
 </style>

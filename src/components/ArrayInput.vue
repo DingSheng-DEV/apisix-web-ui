@@ -1,5 +1,7 @@
 <script setup>
 import { ElButton, ElInput, ElSelect, ElOption } from 'element-plus';
+import { Plus, Delete } from '@element-plus/icons-vue';
+import { useI18nUtils } from '@/utils/i18n.js';
 
 const props = defineProps({
     modelValue: {
@@ -9,11 +11,11 @@ const props = defineProps({
     },
     label: {
         type: String,
-        default: '列表'
+        default: ''
     },
     placeholder: {
         type: String,
-        default: '请输入'
+        default: ''
     },
     options: {
         type: Array,
@@ -22,6 +24,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue']);
+const { t } = useI18nUtils();
 
 const addItem = () => {
     emit('update:modelValue', [...props.modelValue, '']);
@@ -38,7 +41,7 @@ const removeItem = (index) => {
     <div class="array-input">
         <div class="array-input-header">
             <span>{{ label }}</span>
-            <el-button type="text" @click="addItem" icon="el-icon-plus">添加</el-button>
+            <el-button type="primary" text @click="addItem" :icon="Plus">{{ t('common.add') }}</el-button>
         </div>
 
         <div class="array-input-items">
@@ -49,7 +52,7 @@ const removeItem = (index) => {
                     <el-option v-for="opt in options" :key="opt" :label="opt" :value="opt" />
                 </el-select>
 
-                <el-button type="danger" text @click="removeItem(index)" icon="el-icon-delete" />
+                <el-button type="danger" text @click="removeItem(index)" :icon="Delete" />
             </div>
         </div>
     </div>

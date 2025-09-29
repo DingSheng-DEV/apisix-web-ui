@@ -5,9 +5,11 @@ import { ref, reactive, inject, watch, onMounted } from "vue";
 import routeBody from "@/components/resBody/routeBody.vue";
 import { getRouterById } from "@/api/index.js";
 import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
+import { useI18nUtils } from '@/utils/i18n.js';
 const tableList = ref([])
 const apiType = inject('apiType');
 const empty = ref(false);
+const { t } = useI18nUtils();
 watch(apiType, (newValue) => {
 });
 const dialogVisible = ref(false)
@@ -102,35 +104,35 @@ const onSubmit = () => {
         <div style="display: flex; flex-direction: column; width: 100%;">
             <el-card style="width: 100%;height: 80px;">
                 <div style="display: flex;">
-                    <el-input v-model="searchId" placeholder="根据id获取资源" class="input-with-select"
+                    <el-input v-model="searchId" :placeholder="t('messages.searchById')" class="input-with-select"
                         style="width: 25%;margin-right: 6px;">
                         <template #prepend>
                             <el-button :icon="Search" @click="search(searchId)" />
                         </template>
                     </el-input>
-                    <el-button type="primary" @click="onBeforeSubmit(index)">创建资源</el-button>
+                    <el-button type="primary" @click="onBeforeSubmit(index)">{{ t('messages.createResource') }}</el-button>
                 </div>
             </el-card>
             <el-card style="margin-top: 10px;max-height: calc(-240px + 100vh);overflow: auto;">
-                <el-empty description="数据暂无" v-if="tableList.length === 0" />
+                <el-empty :description="t('messages.noData')" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
-                    <el-table-column prop="id" label="ID" />
-                    <el-table-column prop="name" label="名称" />
-                    <el-table-column prop="uri" label="URI路径" />
-                    <el-table-column prop="hosts" label="主机" />
-                    <el-table-column prop="methods" label="HTTP方法" />
-                    <el-table-column prop="remote_addrs" label="远程地址" />
-                    <el-table-column label="操作">
+                    <el-table-column prop="id" :label="t('table.id')" />
+                    <el-table-column prop="name" :label="t('table.name')" />
+                    <el-table-column prop="uri" :label="t('table.uri')" />
+                    <el-table-column prop="hosts" :label="t('table.hosts')" />
+                    <el-table-column prop="methods" :label="t('table.methods')" />
+                    <el-table-column prop="remote_addrs" :label="t('table.remoteAddrs')" />
+                    <el-table-column :label="t('table.actions')">
                         <template #default="scope">
-                            <el-button link type="danger" size="small" @click="handleDelete(scope)">删除</el-button>
-                            <el-button link type="primary" size="small" @click="handlePatch(scope)">编辑</el-button>
+                            <el-button link type="danger" size="small" @click="handleDelete(scope)">{{ t('common.delete') }}</el-button>
+                            <el-button link type="primary" size="small" @click="handlePatch(scope)">{{ t('common.edit') }}</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
             </el-card>
         </div>
 
-        <el-dialog v-model="dialogVisible" title="参数配置" :before-close="handleClose">
+        <el-dialog v-model="dialogVisible" :title="t('messages.configParams')" :before-close="handleClose">
             <routeBody :patch></routeBody>
         </el-dialog>
     </div>

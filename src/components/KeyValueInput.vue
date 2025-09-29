@@ -2,6 +2,9 @@
 import { ref, watch } from 'vue';
 import { ElButton, ElInput } from 'element-plus';
 import { Delete } from '@element-plus/icons-vue';
+import { useI18nUtils } from '@/utils/i18n.js';
+
+const { t } = useI18nUtils();
 const emit = defineEmits(['sendData'])
 const props = defineProps({
     modelValue: {
@@ -11,16 +14,16 @@ const props = defineProps({
     },
     keyPlaceholder: {
         type: String,
+        default: ""
     },
     valuePlaceholder: {
         type: String,
-        default: "值"
+        default: ""
     }
 });
 
 
 const items = ref([]);
-
 const updateItems = () => {
     items.value = Object.entries(props.modelValue).map(([key, value]) => ({
         key,
@@ -61,9 +64,9 @@ const removeItem = (index) => {
 <template>
     <div class="key-value-input">
         <div class="key-value-input-header">
-            <span style="margin-right: 16px;">键值对列表</span>
-            <el-button type="text" @click="addItem">添加节点</el-button>
-            <el-button type="text" @click="support">保存</el-button>
+            <span style="margin-right: 16px;">{{ t('form.keyValueList') }}</span>
+            <el-button type="text" @click="addItem">{{ t('form.addItem') }}</el-button>
+            <el-button type="text" @click="support">{{ t('form.save') }}</el-button>
         </div>
 
         <div class="key-value-input-items" v-show="items.length !== 0">
@@ -71,7 +74,6 @@ const removeItem = (index) => {
                 <el-input v-model="item.key" :placeholder="keyPlaceholder || '键'" />
                 <el-input v-model="item.value" :placeholder="valuePlaceholder || '值'" />
                 <el-button type="danger" text @click="removeItem(index)" :icon="Delete" />
-
             </div>
         </div>
     </div>

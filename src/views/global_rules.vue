@@ -5,9 +5,11 @@ import { ref, reactive, inject, watch, onMounted } from "vue";
 import global_rules_Body from "@/components/resBody/limitCountPluginBody.vue";
 
 import { getGlobal_rules, getGlobal_rulesById, createGlobal_rules, PatchGlobal_rules, DeleteGlobal_rules } from "@/api/module/rules.js";
+import { useI18nUtils } from '@/utils/i18n.js';
 const tableList = ref([])
 const apiType = inject('apiType');
 const empty = ref(false);
+const { t } = useI18nUtils();
 watch(apiType, (newValue) => {
 });
 const dialogVisible = ref(false)
@@ -108,34 +110,34 @@ const onSubmit = () => {
         <div style="display: flex; flex-direction: column; width: 100%;">
             <el-card style="width: 100%;height: 80px;">
                 <div style="display: flex;">
-                    <el-input v-model="searchId" placeholder="根据id获取资源" class="input-with-select"
+                    <el-input v-model="searchId" :placeholder="t('messages.searchById')" class="input-with-select"
                         style="width: 25%;margin-right: 6px;">
                         <template #prepend>
                             <el-button :icon="Search" @click="search(searchId)" />
                         </template>
                     </el-input>
-                    <el-button type="primary" @click="onBeforeSubmit(index)">创建资源</el-button>
+                    <el-button type="primary" @click="onBeforeSubmit(index)">{{ t('messages.createResource') }}</el-button>
                 </div>
             </el-card>
             <el-card style="margin-top: 10px;overflow: auto;">
-                <el-empty description="数据暂无" v-if="tableList.length === 0" />
+                <el-empty :description="t('messages.noData')" v-if="tableList.length === 0" />
                 <el-table :data="tableList" style="width: 100%" v-if="tableList.length !== 0">
-                    <el-table-column prop="id" label="ID" />
-                    <el-table-column prop="policy" label="策略" />
-                    <el-table-column prop="key" label="键" />
-                    <el-table-column prop="rejected_code" label="拒绝状态码" />
-                    <el-table-column prop="time_window" label="时间窗口" />
-                    <el-table-column label="操作">
+                    <el-table-column prop="id" :label="t('table.id')" />
+                    <el-table-column prop="policy" :label="t('table.policy')" />
+                    <el-table-column prop="key" :label="t('table.key')" />
+                    <el-table-column prop="rejected_code" :label="t('table.rejectedCode')" />
+                    <el-table-column prop="time_window" :label="t('table.timeWindow')" />
+                    <el-table-column :label="t('table.actions')">
                         <template #default="scope">
-                            <el-button link type="danger" size="small" @click="handleDelete(scope)">删除</el-button>
-                            <el-button link type="primary" size="small" @click="handlePatch(scope)">编辑</el-button>
+                            <el-button link type="danger" size="small" @click="handleDelete(scope)">{{ t('common.delete') }}</el-button>
+                            <el-button link type="primary" size="small" @click="handlePatch(scope)">{{ t('common.edit') }}</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
             </el-card>
         </div>
 
-        <el-dialog v-model="dialogVisible" title="参数配置" @close="handleClose">
+        <el-dialog v-model="dialogVisible" :title="t('messages.configParams')" @close="handleClose">
             <global_rules_Body :total="total" :patch="patch"></global_rules_Body>
         </el-dialog>
     </div>

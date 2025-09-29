@@ -1,40 +1,47 @@
 <script setup>
 import { ElButton, ElCard, ElOption, ElSelect, ElInput, ElMenuItem, ElMenu, ElSubMenu, ElMenuItemGroup } from "element-plus";
-import { ref, onMounted, inject, reactive, watch } from "vue";
+import { ref, onMounted, inject, reactive, watch, computed } from "vue";
 import { getRouters, createRouters, DeleteRouterByID } from "@/api/index.js";
+import { useI18nUtils } from '@/utils/i18n.js';
+
 let apiType = inject('apiType');
 import { useRouter } from "vue-router";
 const route = useRouter();
+const { t } = useI18nUtils();
+
 const changeType = (index) => {
   // 根据 index 找到对应的菜单项
-  const clickedItem = menuItems
+  const clickedItem = menuItems.value
     .flatMap(group => group.children);
   for (let item of clickedItem) {
     if (index.index === item.index) {
-      apiType.value = item.label;
+      apiType.value = item.labelKey;
       route.push(`/${item.index}`);
     }
   }
 };
 
 const activeIndex = ref('') // 当前激活的菜单index
-const menuItems = reactive([
+
+// 使用计算属性实现响应式的菜单项
+const menuItems = computed(() => [
   {
-    title: '资源配置',
+    title: t('nav.resourceConfig'),
     children: [
-      { index: 'Router', label: '路由' },
-      { index: 'Service', label: '服务' },
-      { index: 'Upstream', label: '上游' },
+      { index: 'Router', labelKey: 'nav.routes', label: t('nav.routes') },
+      { index: 'Service', labelKey: 'nav.services', label: t('nav.services') },
+      { index: 'Upstream', labelKey: 'nav.upstreams', label: t('nav.upstreams') },
     ],
   },
   {
-    title: '全局配置',
+    title: t('nav.globalConfig'),
     children: [
-      { index: 'SSL', label: 'SSL证书' },
-      { index: 'global_rules', label: '全局规则' },
+      { index: 'SSL', labelKey: 'nav.ssl', label: t('nav.ssl') },
+      { index: 'global_rules', labelKey: 'nav.globalRules', label: t('nav.globalRules') },
     ],
   },
 ]);
+
 onMounted(() => {
   let localHash = window.location.pathname.split('/')[1];
   activeIndex.value = localHash;

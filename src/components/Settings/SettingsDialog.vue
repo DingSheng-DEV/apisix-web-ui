@@ -1,31 +1,53 @@
 <template>
-  <el-dialog v-model="dialogVisible" title="系统设置" width="600px" :before-close="handleClose" top="10vh">
+  <el-dialog v-model="dialogVisible" :title="t('settings.title') || '系统设置'" width="600px" :before-close="handleClose" top="10vh">
     <div class="settings-container">
+      <!-- 语言设置卡片 -->
       <el-card class="settings-card">
         <template #header>
           <div class="card-header">
-            <span>API 配置</span>
+            <span>{{ t('settings.language') || '语言设置' }}</span>
+          </div>
+        </template>
+        <el-form label-width="100px" label-position="left">
+          <el-form-item :label="t('settings.interfaceLanguage') || '界面语言'">
+            <el-select v-model="currentLanguage" @change="handleLanguageChange" style="width: 200px">
+              <el-option
+                v-for="option in languageOptions"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </el-card>
+
+      <!-- API配置卡片 -->
+      <el-card class="settings-card">
+        <template #header>
+          <div class="card-header">
+            <span>{{ t('settings.apisixConfig') || 'API 配置' }}</span>
             <el-button type="primary" size="small" @click="showAddDialog">
               <el-icon>
                 <Plus />
               </el-icon>
-              添加配置
+              {{ t('settings.addConfig') || t('common.add') }}
             </el-button>
           </div>
         </template>
         <el-form :model="form" label-width="100px" label-position="left">
-          <el-form-item label="API地址">
-            <el-select v-model="form.api" placeholder="请选择API地址" clearable filterable allow-create style="width: 100%">
+          <el-form-item :label="t('settings.apiUrl') || 'API地址'">
+            <el-select v-model="form.api" :placeholder="t('settings.selectApiUrl') || t('settings.apiUrl')" clearable filterable allow-create style="width: 100%">
               <el-option v-for="item in apiOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-          <el-form-item label="端口">
-            <el-select v-model="form.port" placeholder="请选择端口号" clearable filterable allow-create style="width: 100%">
+          <el-form-item :label="t('settings.port') || '端口'">
+            <el-select v-model="form.port" :placeholder="t('settings.selectPort') || t('settings.port')" clearable filterable allow-create style="width: 100%">
               <el-option v-for="item in portOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-          <el-form-item label="Token">
-            <el-select v-model="form.token" placeholder="请选择Token" clearable filterable allow-create
+          <el-form-item :label="t('settings.token') || 'Token'">
+            <el-select v-model="form.token" :placeholder="t('settings.selectToken') || t('settings.token')" clearable filterable allow-create
               style="width: 100%">
               <el-option v-for="item in tokenOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
@@ -35,32 +57,32 @@
     </div>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="handleClose">取消</el-button>
+        <el-button @click="handleClose">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" @click="saveSettings">
-          保存
+          {{ t('common.save') }}
         </el-button>
       </span>
     </template>
   </el-dialog>
 
   <!-- 添加配置弹窗 -->
-  <el-dialog v-model="addDialogVisible" title="添加 API 配置" width="500px" :before-close="handleAddDialogClose">
+  <el-dialog v-model="addDialogVisible" :title="t('settings.addApiConfig') || '添加 API 配置'" width="500px" :before-close="handleAddDialogClose">
     <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px" label-position="left">
-      <el-form-item label="API地址" prop="api">
-        <el-input v-model="addForm.api" placeholder="请输入API地址" clearable />
+      <el-form-item :label="t('settings.apiUrl') || 'API地址'" prop="api">
+        <el-input v-model="addForm.api" :placeholder="t('settings.inputApi') || t('settings.apiUrl')" clearable />
       </el-form-item>
-      <el-form-item label="端口" prop="port">
-        <el-input v-model="addForm.port" placeholder="请输入端口号" clearable />
+      <el-form-item :label="t('settings.port') || '端口'" prop="port">
+        <el-input v-model="addForm.port" :placeholder="t('settings.inputPort') || t('settings.port')" clearable />
       </el-form-item>
-      <el-form-item label="Token" prop="token">
-        <el-input v-model="addForm.token" placeholder="请输入Token" clearable show-password />
+      <el-form-item :label="t('settings.token') || 'Token'" prop="token">
+        <el-input v-model="addForm.token" :placeholder="t('settings.inputToken') || t('settings.token')" clearable show-password />
       </el-form-item>
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="handleAddDialogClose">取消</el-button>
+        <el-button @click="handleAddDialogClose">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" @click="addConfiguration">
-          添加
+          {{ t('common.add') }}
         </el-button>
       </span>
     </template>
@@ -72,6 +94,7 @@ import { ref, reactive, defineProps, defineEmits, onMounted, watch } from 'vue';
 import { ElDialog, ElForm, ElFormItem, ElSelect, ElOption, ElButton, ElMessage, ElCard, ElInput, ElIcon } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
 import { apiConfig, updateConfig } from '@/utils/config.js';
+import { useI18nUtils } from '@/utils/i18n.js';
 
 const props = defineProps({
   visible: {
@@ -81,6 +104,33 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:visible', 'saved']);
+
+// i18n相关
+const { t, locale, switchLanguage, getCurrentLocale } = useI18nUtils();
+
+// 语言选项
+const languageOptions = ref([
+  {
+    value: 'zh-CN',
+    label: '简体中文'
+  },
+  {
+    value: 'en', 
+    label: 'English'
+  }
+]);
+
+// 当前语言
+const currentLanguage = ref(getCurrentLocale());
+
+// 处理语言切换
+const handleLanguageChange = (newLanguage) => {
+  switchLanguage(newLanguage);
+  ElMessage({
+    type: 'success',
+    message: t('settings.languageChanged') || '语言切换成功'
+  });
+};
 
 // 下拉框选项数据
 const apiOptions = ref([
@@ -140,7 +190,14 @@ watch(() => props.visible, (newVal) => {
     form.api = apiConfig.api;
     form.port = apiConfig.port;
     form.token = apiConfig.token;
+    // 更新当前语言
+    currentLanguage.value = getCurrentLocale();
   }
+});
+
+// 监听语言变化
+watch(locale, (newLocale) => {
+  currentLanguage.value = newLocale;
 });
 
 // 监听dialogVisible的变化

@@ -4,27 +4,27 @@
             <!-- 基本信息部分 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">基本信息</span>
+                    <span class="section-title">{{ t('form.basicInfo') }}</span>
                 </template>
 
                 <el-row :gutter="20">
                     <el-col :span="12">
-                        <el-form-item label="服务名称" prop="name">
-                            <el-input v-model="formData.name" placeholder="请输入服务名称" />
+                        <el-form-item :label="t('services.name')" prop="name">
+                            <el-input v-model="formData.name" :placeholder="t('form.enterServiceName')" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <el-form-item label="服务描述" prop="desc">
-                            <el-input v-model="formData.desc" placeholder="请输入服务描述" />
+                        <el-form-item :label="t('services.description')" prop="desc">
+                            <el-input v-model="formData.desc" :placeholder="t('form.enterServiceDesc')" />
                         </el-form-item>
                     </el-col>
                 </el-row>
 
-                <el-form-item label="服务ID" prop="id">
-                    <el-input v-model="formData.id" placeholder="请输入服务ID" />
+                <el-form-item :label="t('form.serviceId')" prop="id">
+                    <el-input v-model="formData.id" :placeholder="t('form.inputServiceId')" />
                 </el-form-item>
 
-                <el-form-item label="启用WebSocket" prop="enable_websocket">
+                <el-form-item :label="t('form.enableWebsocket')" prop="enable_websocket">
                     <el-switch v-model="formData.enable_websocket" />
                 </el-form-item>
             </el-card>
@@ -32,91 +32,91 @@
             <!-- Host配置部分 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">Host配置</span>
+                    <span class="section-title">{{ t('table.hosts') }}</span>
                 </template>
 
-                <array-input v-model="formData.hosts" label="hosts" placeholder="例如: example.com" />
+                <array-input v-model="formData.hosts" :label="t('table.hosts')" :placeholder="'example.com'" />
             </el-card>
 
             <!-- 标签配置 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">标签配置</span>
+                    <span class="section-title">{{ t('form.labels') }}</span>
                 </template>
 
-                <el-form-item label="标签" prop="labels">
-                    <key-value-input @send-data="updateLabels" v-model="formData.labels" key-placeholder="键"
-                        value-placeholder="值" />
+                <el-form-item :label="t('form.labels')" prop="labels">
+                    <key-value-input @send-data="updateLabels" v-model="formData.labels" :key-placeholder="t('form.keyPlaceholder')"
+                        :value-placeholder="t('form.valuePlaceholder')" />
                 </el-form-item>
             </el-card>
 
             <!-- 插件配置 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">插件配置</span>
+                    <span class="section-title">{{ t('plugins.title') }}</span>
                 </template>
 
-                <el-form-item label="插件配置" prop="plugins">
-                    <el-button type="primary" size="small" @click="addPlugin">添加插件</el-button>
+                <el-form-item :label="t('form.pluginConfigLabel')" prop="plugins">
+                    <el-button type="primary" size="small" @click="addPlugin">{{ t('common.add') }}</el-button>
                     <div v-for="(plugin, index) in pluginsList" :key="index" class="plugin-item">
                         <el-row :gutter="10">
                             <el-col :span="6">
-                                <el-select v-model="plugin.name" placeholder="选择插件" filterable>
+                                <el-select v-model="plugin.name" :placeholder="t('form.selectPlugin')" filterable>
                                     <el-option v-for="item in availablePlugins" :key="item" :label="item"
                                         :value="item" />
                                 </el-select>
                             </el-col>
                             <el-col :span="15">
                                 <el-input v-model="plugin.config" type="textarea" :rows="3"
-                                    placeholder="插件配置 (JSON格式)" />
+                                    :placeholder="t('form.pluginConfigPlaceholder')" />
                             </el-col>
                             <el-col :span="3">
-                                <el-button type="danger" size="small" @click="removePlugin(index)">删除</el-button>
+                                <el-button type="danger" size="small" @click="removePlugin(index)">{{ t('common.delete') }}</el-button>
                             </el-col>
                         </el-row>
                     </div>
                 </el-form-item>
 
-                <el-alert title="插件配置必须是有效的JSON格式" type="info" :closable="false" />
+                <el-alert :title="t('plugins.jsonConfigTip')" type="info" :closable="false" />
             </el-card>
 
             <!-- 上游服务配置 -->
             <el-card class="form-section">
                 <template #header>
-                    <span class="section-title">上游服务配置</span>
+                    <span class="section-title">{{ t('form.upstreamConfig') }}</span>
                 </template>
 
                 <!-- 上游配置类型选择 -->
-                <el-form-item label="上游配置类型">
+                <el-form-item :label="t('form.upstreamType')">
                     <el-radio-group v-model="upstreamType" @change="handleUpstreamTypeChange">
-                        <el-radio label="id">使用上游ID</el-radio>
-                        <el-radio label="inline">内联配置</el-radio>
+                        <el-radio label="id">{{ t('form.useUpstreamId') }}</el-radio>
+                        <el-radio label="inline">{{ t('form.inlineUpstream') }}</el-radio>
                     </el-radio-group>
                 </el-form-item>
 
                 <!-- 上游ID配置 -->
-                <el-form-item v-if="upstreamType === 'id'" label="上游ID" prop="upstream_id">
-                    <el-select v-model="formData.upstream_id" filterable placeholder="选择上游ID" 
+                <el-form-item v-if="upstreamType === 'id'" :label="t('form.upstreamId')" prop="upstream_id">
+                    <el-select v-model="formData.upstream_id" filterable :placeholder="t('form.selectUpstreamId')" 
                         @focus="ensureUpstreamList" :loading="upstreamLoading">
                         <el-option v-for="item in upstreamList" :key="item.id"
                             :label="item.name || item.id" :value="item.id">
                         </el-option>
                     </el-select>
-                    <span class="form-item-tip">从现有上游中选择</span>
+                    <span class="form-item-tip">{{ t('form.chooseFromExistingUpstreams') }}</span>
                 </el-form-item>
 
                 <!-- 内联上游配置 -->
                 <template v-if="upstreamType === 'inline'">
-                    <el-form-item label="负载均衡类型" prop="upstream.type">
-                        <el-select v-model="formData.upstream.type" placeholder="选择负载均衡算法">
-                            <el-option label="轮询" value="roundrobin" />
-                            <el-option label="一致性哈希" value="chash" />
-                            <el-option label="最少连接" value="least_conn" />
+                    <el-form-item :label="t('form.loadBalanceType')" prop="upstream.type">
+                        <el-select v-model="formData.upstream.type" :placeholder="t('form.selectLoadBalanceType')">
+                            <el-option :label="t('upstreams.roundrobin')" value="roundrobin" />
+                            <el-option :label="t('upstreams.chash')" value="chash" />
+                            <el-option :label="t('upstreams.leastConn')" value="least_conn" />
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="协议类型" prop="upstream.scheme">
-                        <el-select v-model="formData.upstream.scheme" placeholder="选择协议">
+                    <el-form-item :label="t('form.protocolType')" prop="upstream.scheme">
+                        <el-select v-model="formData.upstream.scheme" :placeholder="t('form.selectProtocol')">
                             <el-option label="HTTP" value="http" />
                             <el-option label="HTTPS" value="https" />
                             <el-option label="gRPC" value="grpc" />
@@ -124,50 +124,50 @@
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="主机传递" prop="upstream.pass_host">
-                        <el-select v-model="formData.upstream.pass_host" placeholder="选择主机传递方式">
-                            <el-option label="透传" value="pass" />
-                            <el-option label="节点" value="node" />
-                            <el-option label="重写" value="rewrite" />
+                    <el-form-item :label="t('form.passHostMode')" prop="upstream.pass_host">
+                        <el-select v-model="formData.upstream.pass_host" :placeholder="t('form.selectPassHostMode')">
+                            <el-option :label="t('form.passThrough')" value="pass" />
+                            <el-option :label="t('form.nodeMode')" value="node" />
+                            <el-option :label="t('form.rewriteMode')" value="rewrite" />
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item v-if="formData.upstream.pass_host === 'rewrite'" label="上游主机"
+                    <el-form-item v-if="formData.upstream.pass_host === 'rewrite'" :label="t('form.upstreamHost')"
                         prop="upstream.upstream_host">
-                        <el-input v-model="formData.upstream.upstream_host" placeholder="请输入主机名" />
+                        <el-input v-model="formData.upstream.upstream_host" :placeholder="t('form.enterUpstreamHost')" />
                     </el-form-item>
 
-                    <el-form-item label="哈希类型" prop="upstream.hash_on" v-if="formData.upstream.type === 'chash'">
-                        <el-select v-model="formData.upstream.hash_on" placeholder="选择哈希类型">
-                            <el-option label="变量" value="vars" />
-                            <el-option label="请求头" value="header" />
+                    <el-form-item :label="t('form.hashType')" prop="upstream.hash_on" v-if="formData.upstream.type === 'chash'">
+                        <el-select v-model="formData.upstream.hash_on" :placeholder="t('form.selectHashType')">
+                            <el-option :label="t('upstreams.vars')" value="vars" />
+                            <el-option :label="t('upstreams.header')" value="header" />
                             <el-option label="Cookie" value="cookie" />
-                            <el-option label="消费者" value="consumer" />
-                            <el-option label="IP地址" value="ip" />
+                            <el-option :label="t('upstreams.consumer')" value="consumer" />
+                            <el-option :label="t('upstreams.ipAddress')" value="ip" />
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="哈希键" prop="upstream.key"
+                    <el-form-item :label="t('form.hashKey')" prop="upstream.key"
                         v-if="formData.upstream.type === 'chash' && formData.upstream.hash_on">
                         <el-input v-model="formData.upstream.key"
                             :placeholder="getKeyPlaceholder(formData.upstream.hash_on)" />
                     </el-form-item>
 
-                    <el-divider content-position="left">节点配置</el-divider>
+                    <el-divider content-position="left">{{ t('form.nodesSectionTitle') }}</el-divider>
 
-                    <el-form-item label="节点配置" prop="upstream.nodes">
+                    <el-form-item :label="t('form.nodes')" prop="upstream.nodes">
                         <key-value-input @send-data="updateNodes" v-model="formData.upstream.nodes"
-                            key-placeholder="节点地址 (例如: 127.0.0.1:1980)" value-placeholder="权重 (例如: 1)" />
+                            :key-placeholder="t('form.nodesKeyPlaceholder')" :value-placeholder="t('form.nodesValPlaceholder')" />
                     </el-form-item>
 
-                    <el-alert title="节点格式为 IP:端口，权重为正整数，权重越高分配的请求越多" type="info" :closable="false"
+                    <el-alert :title="t('tips.nodesFormatTip')" type="info" :closable="false"
                         style="margin-top: 10px;" />
                 </template>
             </el-card>
             <!-- 表单操作 -->
             <div class="form-actions">
-                <el-button type="primary" @click="submitForm">提交</el-button>
-                <el-button @click="resetForm">重置</el-button>
+                <el-button type="primary" @click="submitForm">{{ t('common.submit') }}</el-button>
+                <el-button @click="resetForm">{{ t('common.reset') }}</el-button>
             </div>
         </el-form>
     </div>
@@ -195,6 +195,7 @@ import {
 } from 'element-plus';
 import { getServicesId, PatchServices, createServices, getUpstreams } from "@/api/index.js"
 import { getNonEmptyValues } from "@/utils/index.js";
+import { useI18nUtils } from '@/utils/i18n.js';
 // 导入自定义组件
 import ArrayInput from '@/components/ArrayInput.vue';
 import KeyValueInput from '@/components/KeyValueInput.vue';
@@ -227,6 +228,7 @@ const formData = reactive(JSON.parse(JSON.stringify(initialFormData)));
 
 // 表单引用
 const formRef = ref();
+const { t } = useI18nUtils();
 
 // 上游配置类型
 const upstreamType = ref("inline");
@@ -298,7 +300,7 @@ const processPlugins = () => {
             try {
                 formData.plugins[plugin.name] = JSON.parse(plugin.config);
             } catch (e) {
-                ElMessage.error(`插件 ${plugin.name} 配置不是有效的JSON格式`);
+                ElMessage.error(`${t('plugins.name')} ${plugin.name} ${t('plugins.jsonConfigTip')}`);
                 return false;
             }
         }
@@ -310,17 +312,17 @@ const processPlugins = () => {
 const getKeyPlaceholder = (hashOn) => {
     switch (hashOn) {
         case 'vars':
-            return '请输入变量名，例如：uri, server_name';
+            return t('form.hashKeyPlaceholderVars');
         case 'header':
-            return '请输入HTTP头名称，例如：User-Agent';
+            return t('form.hashKeyPlaceholderHeader');
         case 'cookie':
-            return '请输入Cookie名称';
+            return t('form.hashKeyPlaceholderCookie');
         case 'consumer':
-            return '留空，将使用消费者ID';
+            return t('form.hashKeyPlaceholderConsumer');
         case 'ip':
-            return '留空，将使用客户端IP';
+            return t('form.hashKeyPlaceholderIp');
         default:
-            return '请输入哈希键';
+            return t('form.hashKeyPlaceholder');
     }
 };
 
@@ -341,11 +343,11 @@ const fetchUpstreams = () => {
         if (res.data && res.data.list) {
             upstreamList.value = res.data.list.map(item => ({
                 id: item.value.id || item.id,
-                name: item.value.name || item.value.desc || `上游-${item.value.id || item.id}`
+                name: item.value.name || item.value.desc || `${t('upstreams.name')}-${item.value.id || item.id}`
             }));
         }
     }).catch(err => {
-        ElMessage.error('获取上游列表失败: ' + err.message);
+        ElMessage.error(t('messages.operationFailed') + ': ' + err.message);
     }).finally(() => {
         upstreamLoading.value = false;
     });

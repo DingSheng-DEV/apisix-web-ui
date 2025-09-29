@@ -5,6 +5,7 @@ import Service from "@/views/Service.vue";
 import Upstream from "@/views/Upstream.vue";
 import SSL from "@/views/SSL.vue";
 import GlobalRules from "@/views/global_rules.vue";
+import I18nDemo from "@/views/I18nDemo.vue";
 
 const routes = [
   {
@@ -38,11 +39,11 @@ const routes = [
         name: "global_rules",
         component: GlobalRules,
       },
-      // {
-      //   path: "/ll",
-      //   name: "a",
-      //   component: import("@/views/Router.vue"),
-      // },
+      {
+        path: "/i18n-demo",
+        name: "I18nDemo",
+        component: I18nDemo,
+      },
     ],
   },
 ];

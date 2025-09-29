@@ -1,17 +1,6 @@
 # APISIX Web UI
 
-[![中文](https://img.shields.io/badge/lang-中文-red.svg)](docs/zh-CN/README.md) [![English](https://img.shields.io/badge/lang-English-blue.svg)](docs/en/README.md)
-
 一个现代化的 Apache APISIX API 网关 Web 用户界面，基于 Vue.js 和 Electron 构建。
-
-A modern Apache APISIX API Gateway Web User Interface built with Vue.js and Electron.
-
----
-
-## 语言 / Language
-
-- [🇨🇳 中文文档](docs/zh-CN/README.md)
-- [🇺🇸 English Documentation](docs/en/README.md)
 
 ## 特性
 

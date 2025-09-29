@@ -1,7 +1,5 @@
 # 贡献指南
 
-[![中文](https://img.shields.io/badge/lang-中文-red.svg)](docs/zh-CN/CONTRIBUTING.md) [![English](https://img.shields.io/badge/lang-English-blue.svg)](docs/en/CONTRIBUTING.md)
-
 欢迎为 APISIX Web UI 项目做出贡献！本文档提供了参与项目贡献的指导原则。
 
 ## 行为准则
