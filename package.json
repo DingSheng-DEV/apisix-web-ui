@@ -57,7 +57,8 @@
       "icon": "public/image.png",
       "artifactName": "${productName}-Setup-${version}.${ext}",
       "publisherName": "Apache APISIX",
-      "sign": null
+      "sign": null,
+      "verifyUpdateCodeSignature": false
     },
     "mac": {
       "target": [
