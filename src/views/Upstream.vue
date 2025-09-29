@@ -1,7 +1,7 @@
 <script setup>
 import { ElEmpty, ElTable, ElTableColumn, ElButton, ElCard, ElInput, ElDialog } from "element-plus";
 import { ref, reactive, provide, inject, watch, onMounted } from "vue";
-import upstreamBody from "@/components/resBody/upstreamBody.vue";
+import upstreamBody from "@/components/resBody/UpstreamBody.vue";
 import { getUpstreams, getUpstreamsById, createUpstreams, DeleteUpstreamsID } from "@/api/index.js";
 import { Search } from '@element-plus/icons-vue'
 import { useI18nUtils } from '@/utils/i18n.js';
