@@ -54,7 +54,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "public/image.png",
+      "icon": "public/app.ico",
       "artifactName": "${productName}-Setup-${version}.${ext}",
       "publisherName": "Apache APISIX",
       "sign": null,
@@ -98,9 +98,9 @@
       "oneClick": false,
       "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "public/image.png",
-      "uninstallerIcon": "public/image.png",
-      "installerHeaderIcon": "public/image.png",
+      "installerIcon": "public/app.ico",
+      "uninstallerIcon": "public/app.ico",
+      "installerHeaderIcon": "public/app.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
     },

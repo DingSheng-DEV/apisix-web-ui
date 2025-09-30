@@ -1,0 +1,66 @@
+name: Test Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            build_script: electron:build:linux
+          - os: macos-latest
+            platform: darwin
+            build_script: electron:build:mac
+          - os: windows-latest
+            platform: win32
+            build_script: electron:build:win
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 安装系统依赖 (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libdrm2 libxcomposite-dev libxdamage-dev libxrandr-dev libgbm-dev libxss-dev libasound2-dev
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 构建 Electron 应用
+        run: npm run ${{ matrix.build_script }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          CSC_LINK: ""
+          CSC_KEY_PASSWORD: ""
+          WIN_CSC_LINK: ""
+          WIN_CSC_KEY_PASSWORD: ""
+          WINDOWS_SIGN: false
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-build-${{ matrix.platform }}
+          path: |
+            build/*.exe
+            build/*.dmg
+            build/*.AppImage
+            build/*.deb
+            build/*.rpm
+          retention-days: 1
+          if-no-files-found: warn
