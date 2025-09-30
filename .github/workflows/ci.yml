@@ -22,7 +22,9 @@ jobs:
           node-version: '18'
 
       - name: 安装依赖
-        run: npm install
+        run: |
+          npm install
+          npm install
 
       - name: 代码格式检查
         continue-on-error: true
@@ -46,7 +48,9 @@ jobs:
           node-version: '18'
 
       - name: 安装依赖
-        run: npm install
+        run: |
+          npm install
+          npm install
 
       - name: 构建 Web 版本
         run: npm run build
@@ -84,7 +88,9 @@ jobs:
           sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libdrm2 libxcomposite-dev libxdamage-dev libxrandr-dev libgbm-dev libxss-dev libasound2-dev
 
       - name: 安装依赖
-        run: npm install
+        run: |
+          npm install
+          npm install
 
       - name: 构建 Electron 应用
         run: npm run electron:build
